@@ -35,7 +35,7 @@ Respect redaction and access limits. Do not assume redacted fields are readable,
 
 For each root-cause group, decide: active code bug, data drift (stored data no longer matches a schema), missing configuration, expected rejection, upstream outage, or noise. Trace the event to current code and the deployed revision, and compare the preceding release before calling it a regression. Deployment and configuration findings go to the repo's deploy runbook, not a code fix.
 
-With several independent groups, fan out one read-only triage agent per group, follow each with an adversarial verifier that tries to refute it, and implement only confirmed fixes in disjoint files (agents-swarm). Carry non-actionable findings through to the report instead of dropping them.
+With several independent groups and authorization to delegate, fan out one read-only triage agent per group, follow each with an adversarial verifier that tries to refute it, and implement only confirmed fixes in disjoint files (agents-swarm). Without that authorization, triage and verify the groups yourself in sequence. Carry non-actionable findings through to the report instead of dropping them.
 
 ## Fix and deliver
 

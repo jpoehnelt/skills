@@ -53,7 +53,7 @@ Regression check: run the same query over a recent window (24h) and a baseline (
 5. Run the repo's affected checks. Open a `perf(scope): ...` PR with the before numbers and their queries, then follow gh-pr-feedback-loop.
 6. After the separately authorized rollout, rerun the same query over a comparable window and report the change with its uncertainty.
 
-With several independent findings, fan out one triage agent per finding with an adversarial verifier, implement only confirmed low-risk fixes in disjoint files, and return escalations for human decision (agents-swarm).
+With several independent findings and authorization to delegate, fan out one triage agent per finding with an adversarial verifier, implement only confirmed low-risk fixes in disjoint files, and return escalations for human decision (agents-swarm). Without that authorization, work the findings yourself in sequence.
 
 ## Review checklist
 
