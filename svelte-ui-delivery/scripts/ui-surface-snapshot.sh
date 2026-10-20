@@ -48,12 +48,12 @@ else echo "$(basename "$0"): need perl, timeout, or gtimeout to bound external c
 # rg exit: 0 = matches, 1 = none, >1 = error (fatal).
 run_rg() {
   local status=0
-  "${limit[@]}" rg "${excludes[@]}" "$@" || status=$?
+  # --hidden so checked-in dotfolders such as .storybook are searched; .git never is.
+  "${limit[@]}" rg --hidden --glob '!**/.git/**' "${excludes[@]}" "$@" || status=$?
   if ((status > 1)); then echo "ui-surface-snapshot: rg failed or timed out (exit $status)" >&2; exit 2; fi
   return 0
 }
-# --hidden so checked-in dotfolders such as .storybook appear; .git is never inventory.
-files=$(run_rg --files --hidden --glob '!**/.git/**' "${roots[@]}")
+files=$(run_rg --files "${roots[@]}")
 
 section() { echo; echo "== $1"; }
 

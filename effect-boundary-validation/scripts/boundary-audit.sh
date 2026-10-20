@@ -34,7 +34,8 @@ for i in "${!paths[@]}"; do
   [[ "${paths[$i]}" != -* ]] || paths[$i]="./${paths[$i]}"
 done
 
-globs=(--glob '*.{ts,tsx,mts,cts,js,jsx,mjs,cjs,svelte}'
+# --hidden so dotfolders such as .storybook are scanned; .git never is.
+globs=(--hidden --glob '*.{ts,tsx,mts,cts,js,jsx,mjs,cjs,svelte}' --glob '!**/.git/**'
   --glob '!**/node_modules/**' --glob '!**/dist/**' --glob '!**/build/**' --glob '!**/.svelte-kit/**')
 # Deadline every call, never unbounded. Prefer perl: it signals the command's process group (TERM at
 # the deadline, KILL after a 10s grace while any member still runs) and forwards INT, TERM, and HUP
