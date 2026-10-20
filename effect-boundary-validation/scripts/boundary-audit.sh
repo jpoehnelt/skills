@@ -76,12 +76,10 @@ search 'Schema\.decode(Unknown)?[A-Za-z]*\b|Schema\.fromJsonString|onExcessPrope
 
 if ((${#rules[@]} > 0)); then
   echo
-  # ast-grep reads --filter as a regex: accept only plain IDs, escape dots, and require each
-  # requested ID to be declared in a tracked rule file, so a typo is an error, not a clean run.
+  # ast-grep reads --filter as a regex: accept only plain IDs and escape dots. Each ID must
+  # also be among the rules sgconfig.yml loads (checked below), so a typo is an error.
   for rule in "${rules[@]}"; do
     [[ "$rule" =~ ^[A-Za-z0-9_.-]+$ ]] || { echo "boundary-audit: invalid --rule id: $rule" >&2; exit 2; }
-    git grep -qE "^id:[[:space:]]*['\"]?${rule//./\\.}['\"]?[[:space:]]*$" -- '*.yml' '*.yaml' \
-      || { echo "boundary-audit: --rule $rule is not declared by any tracked ast-grep rule file" >&2; exit 2; }
   done
   filter="^($(printf '%s|' "${rules[@]//./\\.}" | sed 's/|$//'))$"
   # Never run code the checkout itself supplies: a committed node_modules (for example a PR
@@ -111,6 +109,15 @@ if ((${#rules[@]} > 0)); then
   elif [[ -z "$sg" ]]; then
     echo "boundary-audit: --rule requested but ast-grep executable not found; install dependencies" >&2; exit 2
   else
+    # Ask ast-grep which rules the config actually loads; a stale rule file outside its
+    # ruleDirs must not count. --inspect writes one "entity|rule|<id>:" line per loaded rule.
+    loaded=""
+    loaded=$("${limit[@]}" "$sg" scan --config sgconfig.yml --inspect entity /dev/null 2>&1 >/dev/null) \
+      || { echo "boundary-audit: ast-grep could not list its loaded rules" >&2; exit 2; }
+    for rule in "${rules[@]}"; do
+      grep -qF "|rule|$rule:" <<<"$loaded" \
+        || { echo "boundary-audit: --rule $rule is not loaded by sgconfig.yml" >&2; exit 2; }
+    done
     echo "ast-grep rules: ${rules[*]}"
     # --error=<id> promotes only the requested rules, so their warning and hint matches count
     # while unrelated diagnostics (such as unused suppressions) stay at their own severity.

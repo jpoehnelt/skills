@@ -49,7 +49,8 @@ run_rg() {
   if ((status > 1)); then echo "ui-surface-snapshot: rg failed or timed out (exit $status)" >&2; exit 2; fi
   return 0
 }
-files=$(run_rg --files "${roots[@]}")
+# --hidden so checked-in dotfolders such as .storybook appear; .git is never inventory.
+files=$(run_rg --files --hidden --glob '!**/.git/**' "${roots[@]}")
 
 section() { echo; echo "== $1"; }
 
