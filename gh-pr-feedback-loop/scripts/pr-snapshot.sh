@@ -58,12 +58,12 @@ section api "repos/$repo/pulls/$num/reviews?per_page=100" --paginate \
 # REST comments carry no resolved state; review threads (GraphQL) do. Some hosts
 # block GraphQL, so report that instead of implying there are no open threads.
 echo '--- unresolved review threads (thread id, path, line, outdated, author, first line) ---'
-if threads="$(api graphql -F owner="${repo%%/*}" -F name="${repo#*/}" -F num="$num" -f query='
-query($owner: String!, $name: String!, $num: Int!) {
+if threads="$(api graphql --paginate -F owner="${repo%%/*}" -F name="${repo#*/}" -F num="$num" -f query='
+query($owner: String!, $name: String!, $num: Int!, $endCursor: String) {
   repository(owner: $owner, name: $name) {
     pullRequest(number: $num) {
-      reviewThreads(first: 100) {
-        pageInfo { hasNextPage }
+      reviewThreads(first: 100, after: $endCursor) {
+        pageInfo { hasNextPage endCursor }
         nodes {
           id isResolved isOutdated path line
           comments(first: 1) { nodes { author { login } body } }
@@ -71,16 +71,11 @@ query($owner: String!, $name: String!, $num: Int!) {
       }
     }
   }
-}' --jq '.data.repository.pullRequest.reviewThreads
-  | (.nodes[] | select(.isResolved | not)
-    | [.id, .path, (.line // "-"), .isOutdated, (.comments.nodes[0].author.login // "-"),
-       ((.comments.nodes[0].body // "") | split("\n")[0] | .[0:120])] | @tsv),
-    (if .pageInfo.hasNextPage then "__MORE__" else empty end)' 2>/dev/null)"; then
-  [[ -z "$threads" ]] || grep -v '^__MORE__$' <<<"$threads" || true
-  if grep -q '^__MORE__$' <<<"$threads"; then
-    echo "pr-snapshot: more than 100 review threads; only the first 100 were checked" >&2
-    failed=1
-  fi
+}' --jq '.data.repository.pullRequest.reviewThreads.nodes[]
+  | select(.isResolved | not)
+  | [.id, .path, (.line // "-"), .isOutdated, (.comments.nodes[0].author.login // "-"),
+     ((.comments.nodes[0].body // "") | split("\n")[0] | .[0:120])] | @tsv' 2>/dev/null)"; then
+  [[ -z "$threads" ]] || printf '%s\n' "$threads"
 else
   echo "pr-snapshot: thread resolution state unavailable (GraphQL failed); read threads another way" >&2
   failed=1
