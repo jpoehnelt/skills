@@ -75,14 +75,22 @@ if ((${#rules[@]} > 0)); then
   echo
   filter="^($(printf '%s|' "${rules[@]}" | sed 's/|$//'))$"
   # Never run code the checkout itself supplies: a committed node_modules (for example a PR
-  # adding node_modules/.bin/ast-grep) is refused, and so is an sgconfig.yml naming native
-  # parsers (customLanguages/libraryPath), which ast-grep loads with dlopen. An installed
+  # adding node_modules/.bin/ast-grep) is refused, and so is an sgconfig.yml that could name
+  # native parsers (customLanguages.<lang>.libraryPath), which ast-grep loads with dlopen. An installed
   # node_modules is only as trusted as the install; audit untrusted PRs with a global ast-grep.
   if [[ -n "$(git ls-files -- node_modules | head -1)" ]]; then
     echo "boundary-audit: refusing --rule: node_modules has tracked files in this checkout" >&2; exit 2
   fi
-  if [[ -f sgconfig.yml ]] && grep -qE '(customLanguages|libraryPath)' sgconfig.yml; then
-    echo "boundary-audit: refusing --rule: sgconfig.yml loads native libraries (customLanguages/libraryPath)" >&2; exit 2
+  # Allowlist, not denylist: YAML escapes ("customLanguage\x73") defeat substring checks.
+  # Every top-level key must be a safe one; indented lines count only under such a key,
+  # so flow-style roots, quoted or escaped keys, and indented root mappings are refused.
+  if [[ -f sgconfig.yml ]] && ! awk '
+      /^[[:space:]]*(#.*)?$/ { next }
+      /^---[[:space:]]*(#.*)?$/ { under_safe = 0; next }
+      /^(ruleDirs|utilDirs|testConfigs|languageGlobs|languageInjections):/ { under_safe = 1; next }
+      /^[[:space:]]/ && under_safe { next }
+      { exit 1 }' sgconfig.yml; then
+    echo "boundary-audit: refusing --rule: sgconfig.yml has a top-level key outside ruleDirs, utilDirs, testConfigs, languageGlobs, languageInjections" >&2; exit 2
   fi
   sg=""
   if [[ -x node_modules/.bin/ast-grep ]]; then sg=node_modules/.bin/ast-grep
