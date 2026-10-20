@@ -39,10 +39,10 @@ fi
 # timestamps are UTC ISO-8601 (YYYY-MM-DDTHH:MM:SSZ), so string comparison is ordering
 # when the cutoff uses the same form. --paginate reads every page of open PRs.
 # Deadline every call: timeout(1), gtimeout (macOS coreutils), or a perl alarm; never unbounded.
-# Each sends TERM at the deadline and KILL 10s later, so a command that ignores TERM still stops.
+# Each signals the command's process group: TERM at the deadline, KILL 10s later if it is still running.
 if command -v timeout >/dev/null; then limit_cmd=(timeout -k 10 "$limit")
 elif command -v gtimeout >/dev/null; then limit_cmd=(gtimeout -k 10 "$limit")
-elif command -v perl >/dev/null; then limit_cmd=(perl -e '$t = shift; defined(my $pid = fork) or die "fork: $!\n"; if (!$pid) { exec @ARGV or die "exec: $!\n" } $SIG{ALRM} = sub { kill TERM => $pid; for (1 .. 10) { exit 124 if waitpid($pid, 1) > 0; sleep 1 } kill KILL => $pid; waitpid $pid, 0; exit 124 }; alarm $t; waitpid $pid, 0; exit($? & 127 ? 128 + ($? & 127) : $? >> 8)' "$limit")
+elif command -v perl >/dev/null; then limit_cmd=(perl -e '$t = shift; defined(my $pid = fork) or die "fork: $!\n"; if (!$pid) { setpgrp(0, 0); exec @ARGV or die "exec: $!\n" } $SIG{ALRM} = sub { kill TERM => -$pid; for (1 .. 10) { exit 124 if waitpid($pid, 1) > 0; sleep 1 } kill KILL => -$pid; waitpid $pid, 0; exit 124 }; alarm $t; waitpid $pid, 0; exit($? & 127 ? 128 + ($? & 127) : $? >> 8)' "$limit")
 else echo "$(basename "$0"): need timeout, gtimeout, or perl to bound external calls" >&2; exit 2; fi
 "${limit_cmd[@]}" gh api --paginate "repos/$repo/pulls?state=open&sort=updated&direction=desc&per_page=100" \
   --jq ".[] | select(.updated_at > \"$cutoff\") | [.number, .updated_at, .title, .html_url] | @tsv"
