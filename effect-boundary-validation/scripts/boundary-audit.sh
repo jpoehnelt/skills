@@ -102,10 +102,13 @@ if ((${#rules[@]} > 0)); then
     echo "boundary-audit: --rule requested but ast-grep executable not found; install dependencies" >&2; exit 2
   else
     echo "ast-grep rules: ${rules[*]}"
+    # --error=<id> promotes only the requested rules, so their warning and hint matches count
+    # while unrelated diagnostics (such as unused suppressions) stay at their own severity.
+    # ast-grep then exits 1 for any finding; anything higher (including a timeout) is a tool error.
+    promote=()
+    for rule in "${rules[@]}"; do promote+=("--error=$rule"); done
     sg_status=0
-    "${limit[@]}" "$sg" scan --config sgconfig.yml --filter "$filter" --error --report-style short "${paths[@]}" || sg_status=$?
-    # --error makes warning and hint rules count too; ast-grep then exits 1 for any finding,
-    # and anything higher (including a timeout) is a tool error.
+    "${limit[@]}" "$sg" scan --config sgconfig.yml --filter "$filter" "${promote[@]}" --report-style short "${paths[@]}" || sg_status=$?
     if ((sg_status == 1)); then banned=1
     elif ((sg_status > 1)); then echo "boundary-audit: ast-grep failed or timed out (exit $sg_status)" >&2; exit 2; fi
   fi
