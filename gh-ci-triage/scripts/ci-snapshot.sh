@@ -95,13 +95,14 @@ else
 fi
 
 if [[ -n "$workflow" ]]; then
-  path="repos/$repo/actions/workflows/$workflow/runs?branch=$base&per_page=10"
+  path="repos/$repo/actions/workflows/$workflow/runs"
 else
-  path="repos/$repo/actions/runs?branch=$base&per_page=10"
+  path="repos/$repo/actions/runs"
 fi
 echo
 echo "Recent runs on $base${workflow:+ for $workflow} (id, workflow, status, conclusion, sha, url)"
-section api "$path" \
+# Pass the branch as a field so gh encodes it: a ref name may contain &, #, or %.
+section api "$path" -X GET -f branch="$base" -F per_page=10 \
   --jq '.workflow_runs[] | [.id, .name, .status, (.conclusion // "-"), .head_sha[0:8], .html_url] | @tsv'
 
 exit "$failed"
