@@ -33,7 +33,7 @@ State the intent in one paragraph, drawn from the user's message, commit message
 
 ## 3. Spawn reviewers
 
-Spawn one subagent per angle, all in a single turn so they run concurrently, using a smaller, faster model for each. (Claude Code: the Agent tool; Codex: its subagent/collaboration tool.) If the client caps concurrent subagents, run the angles in batches within that cap; if it cannot spawn subagents, run them sequentially in the main thread. Reviewers are read-only: tell them not to edit files.
+When the user invoked this skill by name or otherwise authorized delegation, spawn one subagent per angle, all in a single turn so they run concurrently, using a smaller, faster model for each. Otherwise, or if the repo's rules limit delegation, run the angles yourself in sequence in the main thread. (Claude Code: the Agent tool; Codex: its subagent/collaboration tool.) If the client caps concurrent subagents, run the angles in batches within that cap; if it cannot spawn subagents, run them sequentially in the main thread. Reviewers are read-only: tell them not to edit files.
 
 | Reviewer | Angle |
 | -------- | ----- |
@@ -65,7 +65,7 @@ You are the lead reviewer, a pragmatic senior engineer, not an aggregator. Spot-
 
 ## Review checklist
 
-- Reviewers had distinct angles and were launched in one message, or in batches within the client's subagent cap, or sequentially when subagents are unavailable.
+- Reviewers had distinct angles and were launched in one message, or in batches within the client's subagent cap, or run sequentially when delegation was not authorized or subagents are unavailable.
 - The repo-rules reviewer read the real `AGENTS.md`.
 - Cited lines were spot-checked against the code.
 - No change was applied. The user decides which findings to act on.

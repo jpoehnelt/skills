@@ -28,18 +28,24 @@ command -v rg >/dev/null || { echo "boundary-audit: ripgrep (rg) is required" >&
 root="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "boundary-audit: not inside a git repository" >&2; exit 2; }
 cd "$root"
 ((${#paths[@]} > 0)) || paths=(.)
-for path in "${paths[@]}"; do
-  [[ -e "$path" ]] || { echo "boundary-audit: path does not exist: $path" >&2; exit 2; }
+for i in "${!paths[@]}"; do
+  [[ -e "${paths[$i]}" ]] || { echo "boundary-audit: path does not exist: ${paths[$i]}" >&2; exit 2; }
+  # A path that starts with "-" (for example a PR-added file named --pre=cmd) must never parse as an option.
+  [[ "${paths[$i]}" != -* ]] || paths[$i]="./${paths[$i]}"
 done
 
 globs=(--glob '*.{ts,tsx,mts,cts,js,mjs,cjs,svelte}' --glob '!**/*.{test,spec}.*'
   --glob '!**/node_modules/**' --glob '!**/dist/**' --glob '!**/build/**' --glob '!**/.svelte-kit/**')
-limit=() ; command -v timeout >/dev/null && limit=(timeout 60)
+# Deadline every call: timeout(1), gtimeout (macOS coreutils), or a perl alarm; never unbounded.
+if command -v timeout >/dev/null; then limit=(timeout 60)
+elif command -v gtimeout >/dev/null; then limit=(gtimeout 60)
+elif command -v perl >/dev/null; then limit=(perl -e 'alarm shift; exec @ARGV or die "exec: $!\n"' 60)
+else echo "$(basename "$0"): need timeout, gtimeout, or perl to bound external calls" >&2; exit 2; fi
 
 # rg exit: 0 = matches printed, 1 = none, >1 = error (fatal).
 search() {
   local status=0
-  "${limit[@]}" rg -n --max-columns 200 "${globs[@]}" -e "$1" "${paths[@]}" || status=$?
+  "${limit[@]}" rg -n --max-columns 200 "${globs[@]}" -e "$1" -- "${paths[@]}" || status=$?
   if ((status > 1)); then echo "boundary-audit: rg failed or timed out (exit $status)" >&2; exit 2; fi
   return "$status"
 }
@@ -49,7 +55,8 @@ if ((${#bans[@]} > 0)); then
   alt="$(printf '%s|' "${bans[@]}" | sed 's/[.[\*^$()+?{}]/\\&/g')"
   alt="${alt%|}"
   echo "Banned imports: ${bans[*]} (must be empty)"
-  if search "(from|import|require\\()\\s*['\"\`]($alt)(/[^'\"\`]*)?['\"\`]"; then banned=1; fi
+  # Static imports, re-exports, side-effect imports, dynamic import(), and require().
+  if search "\\b(from|import|require)\\s*\\(?\\s*['\"\`]($alt)(/[^'\"\`]*)?['\"\`]"; then banned=1; fi
   echo
 fi
 
@@ -70,13 +77,18 @@ if ((${#rules[@]} > 0)); then
   sg=""
   if [[ -x node_modules/.bin/ast-grep ]]; then sg=node_modules/.bin/ast-grep
   elif command -v ast-grep >/dev/null; then sg=ast-grep; fi
+  # A requested rule that cannot run is a tool error (exit 2), never a clean result.
   if [[ ! -f sgconfig.yml ]]; then
-    echo "ast-grep: no sgconfig.yml at repo root; skipping rules" >&2
+    echo "boundary-audit: --rule requested but no sgconfig.yml at repo root" >&2; exit 2
   elif [[ -z "$sg" ]]; then
-    echo "ast-grep: executable not found; install dependencies and rerun" >&2
+    echo "boundary-audit: --rule requested but ast-grep executable not found; install dependencies" >&2; exit 2
   else
     echo "ast-grep rules: ${rules[*]}"
-    "${limit[@]}" "$sg" scan --config sgconfig.yml --filter "$filter" --report-style short "${paths[@]}" || banned=1
+    sg_status=0
+    "${limit[@]}" "$sg" scan --config sgconfig.yml --filter "$filter" --report-style short "${paths[@]}" || sg_status=$?
+    # ast-grep exits 1 for findings; anything higher (including a timeout) is a tool error.
+    if ((sg_status == 1)); then banned=1
+    elif ((sg_status > 1)); then echo "boundary-audit: ast-grep failed or timed out (exit $sg_status)" >&2; exit 2; fi
   fi
 fi
 

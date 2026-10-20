@@ -43,6 +43,12 @@ cd "$repo_root"
 fail() { printf 'FAIL %s\n' "$1" >&2; failures=$((failures + 1)); }
 pass() { printf 'PASS %s\n' "$1"; }
 
+# Deadline every command: timeout(1), gtimeout (macOS coreutils), or a perl alarm; never unbounded.
+if command -v timeout >/dev/null; then runner=(timeout "$limit")
+elif command -v gtimeout >/dev/null; then runner=(gtimeout "$limit")
+elif command -v perl >/dev/null; then runner=(perl -e 'alarm shift; exec @ARGV or die "exec: $!\n"' "$limit")
+else echo "cutover-audit: need timeout, gtimeout, or perl to bound --test and --live-check" >&2; exit 2; fi
+
 for entry in "${specs[@]}"; do
   kind=${entry%%$'\t'*} spec=${entry#*$'\t'}
   [[ "$spec" == ?*:::?* ]] || { fail "$kind: malformed spec $spec"; continue; }
@@ -59,8 +65,12 @@ for entry in "${specs[@]}"; do
         continue
       fi
       if [[ "$scope_status" -eq 1 ]]; then
-        # A retired scope with no tracked files is fully retired; a required one cannot match.
-        if [[ "$kind" == retired ]]; then pass "retired: $label (scope absent: $scope)"; else fail "required: scope is not tracked: $scope"; fi
+        # An untracked retired scope counts as retired only if it was ever tracked; otherwise it is likely a typo.
+        # A shallow clone may lack that history; fetch more history rather than trust a pass.
+        if [[ "$kind" == retired ]]; then
+          if [[ -n "$(git log -1 --format=%h -- "$scope" 2>/dev/null)" ]]; then pass "retired: $label (scope removed: $scope)"
+          else fail "retired: $label scope was never tracked (typo or shallow clone?): $scope"; fi
+        else fail "required: scope is not tracked: $scope"; fi
         continue
       fi
       status=0
@@ -73,8 +83,7 @@ for entry in "${specs[@]}"; do
       fi ;;
     test | live-check)
       printf 'RUN %s: %s\n' "$kind" "$label"
-      if command -v timeout >/dev/null 2>&1; then runner=(timeout "$limit"); else runner=(); fi
-      if ${runner[@]+"${runner[@]}"} bash -o pipefail -c "$rest"; then pass "$kind: $label"; else fail "$kind: $label"; fi ;;
+      if "${runner[@]}" bash -o pipefail -c "$rest"; then pass "$kind: $label"; else fail "$kind: $label"; fi ;;
   esac
 done
 

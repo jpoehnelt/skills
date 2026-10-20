@@ -32,7 +32,7 @@ Step 4 is usually one small script that imports the same library the app ships a
 3. Look where grep stops. Read the source of the libraries you call and check the pinned version and any local patch. Work out when things run: microtasks, teardown, ordering. Follow what symbol search misses: JSON an API returns, a database column, a stored document or envelope, a wire format, another language reading the same bytes, an event name or persisted workflow step id, a tenant scope key, a feature flag, another runtime that runs the same code, code three hops downstream. Start from the contracts AGENTS.md lists, and list affected packages with the task runner's affected query (for example `turbo run check test --affected --dry-run`).
 4. Rate each risk with a real likelihood and a real cost. Keep confirmed risks and list cleared ones separately. Cite a real `file:line`. A search that finds nothing is still an answer. Never invent a caller or an API.
 5. Prove the one fact with a script or test that runs the real code. Run it and paste the result.
-6. For a wide change, ask several independent reviewers (parallel subagents, see `agents-swarm`) the same question and merge the answers.
+6. For a wide change, when the user has authorized delegation, ask several independent reviewers (parallel subagents, see `agents-swarm`) the same question and merge the answers. Otherwise, check the riskiest paths yourself in sequence.
 
 ## What to hand back
 

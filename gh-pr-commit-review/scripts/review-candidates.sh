@@ -26,6 +26,11 @@ fi
 
 # Open PRs sorted by last update, newest first; keep those after the cutoff. GitHub
 # timestamps are UTC ISO-8601 (YYYY-MM-DDTHH:MM:SSZ), so string comparison is ordering
-# when the cutoff uses the same form. One page of 100 bounds the sweep.
-timeout "$limit" gh api "repos/$repo/pulls?state=open&sort=updated&direction=desc&per_page=100" \
+# when the cutoff uses the same form. --paginate reads every page of open PRs.
+# Deadline every call: timeout(1), gtimeout (macOS coreutils), or a perl alarm; never unbounded.
+if command -v timeout >/dev/null; then limit_cmd=(timeout "$limit")
+elif command -v gtimeout >/dev/null; then limit_cmd=(gtimeout "$limit")
+elif command -v perl >/dev/null; then limit_cmd=(perl -e 'alarm shift; exec @ARGV or die "exec: $!\n"' "$limit")
+else echo "$(basename "$0"): need timeout, gtimeout, or perl to bound external calls" >&2; exit 2; fi
+"${limit_cmd[@]}" gh api --paginate "repos/$repo/pulls?state=open&sort=updated&direction=desc&per_page=100" \
   --jq ".[] | select(.updated_at > \"$cutoff\") | [.number, .updated_at, .title, .html_url] | @tsv"

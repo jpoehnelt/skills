@@ -21,11 +21,20 @@ while getopts ":R:w:" opt; do
 done
 shift $((OPTIND - 1))
 pr="${1:-}"
+# A GitHub PR URL carries its own repository; use it unless one is passed explicitly.
+url_repo=""
+if [[ "$pr" =~ github\.com[/:]([^/]+/[^/]+)/pull/([0-9]+) ]]; then
+  url_repo="${BASH_REMATCH[1]}"
+  pr="${BASH_REMATCH[2]}"
+fi
 pr="${pr##*/}"
 limit="${GH_TIMEOUT:-60}"
 
 command -v gh >/dev/null || { echo "ci-snapshot: gh is required" >&2; exit 2; }
 
+if [[ -z "$repo" && -n "$url_repo" ]]; then
+  repo="$url_repo"
+fi
 if [[ -z "$repo" ]]; then
   url="$(git remote get-url origin)" || { echo "ci-snapshot: no origin remote; pass -R owner/repo" >&2; exit 2; }
   # Last two path segments, so https, ssh, and proxied remotes all work.
@@ -46,7 +55,12 @@ default_branch() {
   fi
 }
 
-api() { timeout "$limit" gh api "$@"; }
+# Deadline every call: timeout(1), gtimeout (macOS coreutils), or a perl alarm; never unbounded.
+if command -v timeout >/dev/null; then limit_cmd=(timeout "$limit")
+elif command -v gtimeout >/dev/null; then limit_cmd=(gtimeout "$limit")
+elif command -v perl >/dev/null; then limit_cmd=(perl -e 'alarm shift; exec @ARGV or die "exec: $!\n"' "$limit")
+else echo "$(basename "$0"): need timeout, gtimeout, or perl to bound external calls" >&2; exit 2; fi
+api() { "${limit_cmd[@]}" gh api "$@"; }
 # A failed section is reported and the rest still prints; the exit status stays non-zero.
 failed=0
 section() { "$@" || { echo "ci-snapshot: section failed: ${*:2:1}" >&2; failed=1; }; }
@@ -64,15 +78,16 @@ if [[ -n "$pr" ]]; then
 
   echo
   echo "Commit statuses (state, context, url)"
-  section api "repos/$repo/commits/$head_sha/status" \
+  section api "repos/$repo/commits/$head_sha/status?per_page=100" --paginate \
     --jq '.statuses[] | [.state, .context, (.target_url // "-")] | @tsv'
 
   echo
   echo "Workflow runs for $head_sha (id, workflow, status, conclusion, url)"
-  section api "repos/$repo/actions/runs?head_sha=$head_sha&per_page=20" \
+  section api "repos/$repo/actions/runs?head_sha=$head_sha&per_page=100" --paginate \
     --jq '.workflow_runs[] | [.id, .name, .status, (.conclusion // "-"), .html_url] | @tsv'
 else
-  base="$(default_branch)"
+  # The selected repository's default branch; fall back to the local origin's.
+  base="$(api "repos/$repo" --jq .default_branch 2>/dev/null)" || base="$(default_branch)"
 fi
 
 if [[ -n "$workflow" ]]; then

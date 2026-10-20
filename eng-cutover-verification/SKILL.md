@@ -30,7 +30,7 @@ Encode the proof with [`scripts/cutover-audit.sh`](scripts/cutover-audit.sh). It
   --final
 ```
 
-Each spec is `label:::value`; searches are `label:::git-pathspec:::extended-regex`. `--retired` fails while the regex still matches tracked files in the pathspec, and passes when the pathspec has no tracked files left. `--required` fails when nothing matches. `--final` belongs on the integration branch: it also needs a clean tree and at least one `--live-check`.
+Each spec is `label:::value`; searches are `label:::git-pathspec:::extended-regex`. `--retired` fails while the regex still matches tracked files in the pathspec, and passes when the pathspec has no tracked files left but was tracked earlier in history; a pathspec that never matched anything fails as a likely typo. `--required` fails when nothing matches. `--final` belongs on the integration branch: it also needs a clean tree and at least one `--live-check`.
 
 Repo search alone never proves live state. A removed reference says nothing about what is deployed or running; probe the real thing (a health endpoint, `docker ps`, the deployed service, a deploy plan diff) with a live check.
 

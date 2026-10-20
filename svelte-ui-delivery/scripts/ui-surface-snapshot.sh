@@ -25,15 +25,22 @@ command -v rg >/dev/null || { echo "ui-surface-snapshot: ripgrep (rg) is require
 root="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "ui-surface-snapshot: not inside a git repository" >&2; exit 2; }
 cd "$root"
 ((${#roots[@]} > 0)) || roots=(.)
-for dir in "${roots[@]}"; do
-  [[ -d "$dir" ]] || { echo "ui-surface-snapshot: not a directory: $dir" >&2; exit 2; }
+for i in "${!roots[@]}"; do
+  [[ -d "${roots[$i]}" ]] || { echo "ui-surface-snapshot: not a directory: ${roots[$i]}" >&2; exit 2; }
+  # A root that starts with "-" must never parse as an rg option.
+  [[ "${roots[$i]}" != -* ]] || roots[$i]="./${roots[$i]}"
 done
 
-pattern="$(printf '%s|' "${keywords[@]}")"
-pattern="${pattern%|}"
+# Keywords are literal fragments, never regular expressions.
+kw=()
+for k in "${keywords[@]}"; do kw+=(-e "$k"); done
 excludes=(--glob '!**/node_modules/**' --glob '!**/dist/**' --glob '!**/build/**'
   --glob '!**/.svelte-kit/**' --glob '!**/storybook-static/**')
-limit=(); command -v timeout >/dev/null && limit=(timeout 60)
+# Deadline every call: timeout(1), gtimeout (macOS coreutils), or a perl alarm; never unbounded.
+if command -v timeout >/dev/null; then limit=(timeout 60)
+elif command -v gtimeout >/dev/null; then limit=(gtimeout 60)
+elif command -v perl >/dev/null; then limit=(perl -e 'alarm shift; exec @ARGV or die "exec: $!\n"' 60)
+else echo "$(basename "$0"): need timeout, gtimeout, or perl to bound external calls" >&2; exit 2; fi
 
 # rg exit: 0 = matches, 1 = none, >1 = error (fatal).
 run_rg() {
@@ -47,26 +54,29 @@ files=$(run_rg --files "${roots[@]}")
 section() { echo; echo "== $1"; }
 
 section "Components matching: ${keywords[*]}"
-grep -E '/components/.*\.svelte$' <<<"$files" | grep -iE -- "$pattern" | head -80 || true
+grep -E '/components/.*\.svelte$' <<<"$files" | grep -iF "${kw[@]}" | head -80 || true
 
 section "Shared primitive folders (ui/, packages/ui)"
 grep -E '(/components/ui/|packages/ui/src/)' <<<"$files" | sed -E 's#/[^/]+$##' | sort -u | head -60 || true
 
 section "Routes matching"
-grep -E '/routes/' <<<"$files" | grep -iE -- "$pattern" | head -60 || true
+grep -E '/routes/' <<<"$files" | grep -iF "${kw[@]}" | head -60 || true
 
 section "Consumers (files referencing the keywords)"
-run_rg -li --glob '*.{svelte,ts,js}' -e "$pattern" "${roots[@]}" | grep -vE '\.(test|spec|stories)\.' | head -80 || true
+# Capture first so an rg failure exits 2 instead of vanishing in the pipeline.
+consumers=$(run_rg -li -F --glob '*.{svelte,ts,js}' "${kw[@]}" "${roots[@]}")
+grep -vE '\.(test|spec|stories)\.' <<<"$consumers" | head -80 || true
 
 section "Stories and tests matching"
-grep -E '\.(stories|story|test|spec)\.(ts|js|svelte)$' <<<"$files" | grep -iE -- "$pattern" | head -60 || true
+grep -E '\.(stories|story|test|spec)\.(ts|js|svelte)$' <<<"$files" | grep -iF "${kw[@]}" | head -60 || true
 
 section "Theme tokens and fonts (global CSS)"
 css=$(grep -E '(^|/)(app|global|globals|theme|tokens)\.css$' <<<"$files" | head -5 || true)
 if [[ -n "$css" ]]; then
   while IFS= read -r f; do
     echo "-- $f"
-    run_rg -n -e '^\s*--[a-z0-9-]+\s*:|font-family|@theme|@custom-variant|prefers-reduced-motion|\.dark\b' "$f" | head -40
+    tokens=$(run_rg -n -e '^\s*--[a-z0-9-]+\s*:|font-family|@theme|@custom-variant|prefers-reduced-motion|\.dark\b' "$f")
+    [[ -z "$tokens" ]] || head -40 <<<"$tokens"
   done <<<"$css"
 else
   echo "(no app/global/theme CSS found)"
