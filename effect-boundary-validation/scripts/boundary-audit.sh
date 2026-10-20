@@ -36,13 +36,14 @@ done
 
 globs=(--glob '*.{ts,tsx,mts,cts,js,jsx,mjs,cjs,svelte}'
   --glob '!**/node_modules/**' --glob '!**/dist/**' --glob '!**/build/**' --glob '!**/.svelte-kit/**')
-# Deadline every call: timeout(1), gtimeout (macOS coreutils), or a perl alarm; never unbounded.
-# Each signals the command's process group: TERM at the deadline, then KILL after a 10s grace period.
-# INT, TERM, or HUP sent to this script is forwarded to the group with the same grace and KILL.
-if command -v timeout >/dev/null; then limit=(timeout -k 10 60)
+# Deadline every call, never unbounded. Prefer perl: it signals the command's process group (TERM at
+# the deadline, KILL after a 10s grace while any member still runs) and forwards INT, TERM, and HUP
+# the same way. timeout(1) or gtimeout (macOS coreutils) is the fallback; its -k KILL reaches the
+# group only while the direct child still runs.
+if command -v perl >/dev/null; then limit=(perl -e '$t = shift; defined(my $pid = fork) or die "fork: $!\n"; if (!$pid) { setpgrp(0, 0); exec @ARGV or die "exec: $!\n" } my $stop = sub { kill $_[0] => -$pid; for (1 .. 10) { waitpid($pid, 1); last unless kill 0 => -$pid; sleep 1 } kill KILL => -$pid; waitpid $pid, 0; exit $_[1] }; for my $s (qw(INT TERM HUP)) { $SIG{$s} = sub { $stop->($s, 128 + { INT => 2, TERM => 15, HUP => 1 }->{$s}) } } $SIG{ALRM} = sub { $stop->(TERM => 124) }; alarm $t; waitpid $pid, 0; exit($? & 127 ? 128 + ($? & 127) : $? >> 8)' 60)
+elif command -v timeout >/dev/null; then limit=(timeout -k 10 60)
 elif command -v gtimeout >/dev/null; then limit=(gtimeout -k 10 60)
-elif command -v perl >/dev/null; then limit=(perl -e '$t = shift; defined(my $pid = fork) or die "fork: $!\n"; if (!$pid) { setpgrp(0, 0); exec @ARGV or die "exec: $!\n" } my $stop = sub { kill $_[0] => -$pid; for (1 .. 10) { last if waitpid($pid, 1) > 0; sleep 1 } kill KILL => -$pid; waitpid $pid, 0; exit $_[1] }; for my $s (qw(INT TERM HUP)) { $SIG{$s} = sub { $stop->($s, 128 + { INT => 2, TERM => 15, HUP => 1 }->{$s}) } } $SIG{ALRM} = sub { $stop->(TERM => 124) }; alarm $t; waitpid $pid, 0; exit($? & 127 ? 128 + ($? & 127) : $? >> 8)' 60)
-else echo "$(basename "$0"): need timeout, gtimeout, or perl to bound external calls" >&2; exit 2; fi
+else echo "$(basename "$0"): need perl, timeout, or gtimeout to bound external calls" >&2; exit 2; fi
 
 # rg exit: 0 = matches printed, 1 = none, >1 = error (fatal).
 # Bans cover every source file, tests included; the inventories below skip tests (no_tests).
@@ -61,8 +62,8 @@ if ((${#bans[@]} > 0)); then
   alt="${alt%|}"
   echo "Banned imports: ${bans[*]} (must be empty)"
   # Static imports, re-exports, side-effect imports, dynamic import(), and require(), including
-  # forms split across lines (-U lets \s match newlines).
-  if search "\\b(from|import|require)\\s*\\(?\\s*['\"\`]($alt)(/[^'\"\`]*)?['\"\`]" -U; then banned=1; fi
+  # forms split across lines (-U lets \s match newlines) or with block comments before the module.
+  if search "\\b(from|import|require)\\s*\\(?(\\s|/\\*[\\s\\S]*?\\*/)*['\"\`]($alt)(/[^'\"\`]*)?['\"\`]" -U; then banned=1; fi
   echo
 fi
 

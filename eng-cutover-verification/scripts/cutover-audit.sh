@@ -43,13 +43,14 @@ cd "$repo_root"
 fail() { printf 'FAIL %s\n' "$1" >&2; failures=$((failures + 1)); }
 pass() { printf 'PASS %s\n' "$1"; }
 
-# Deadline every command: timeout(1), gtimeout (macOS coreutils), or a perl alarm; never unbounded.
-# Each signals the command's process group: TERM at the deadline, then KILL after a 10s grace period.
-# INT, TERM, or HUP sent to this script is forwarded to the group with the same grace and KILL.
-if command -v timeout >/dev/null; then runner=(timeout -k 10 "$limit")
+# Deadline every command, never unbounded. Prefer perl: it signals the command's process group (TERM at
+# the deadline, KILL after a 10s grace while any member still runs) and forwards INT, TERM, and HUP
+# the same way. timeout(1) or gtimeout (macOS coreutils) is the fallback; its -k KILL reaches the
+# group only while the direct child still runs.
+if command -v perl >/dev/null; then runner=(perl -e '$t = shift; defined(my $pid = fork) or die "fork: $!\n"; if (!$pid) { setpgrp(0, 0); exec @ARGV or die "exec: $!\n" } my $stop = sub { kill $_[0] => -$pid; for (1 .. 10) { waitpid($pid, 1); last unless kill 0 => -$pid; sleep 1 } kill KILL => -$pid; waitpid $pid, 0; exit $_[1] }; for my $s (qw(INT TERM HUP)) { $SIG{$s} = sub { $stop->($s, 128 + { INT => 2, TERM => 15, HUP => 1 }->{$s}) } } $SIG{ALRM} = sub { $stop->(TERM => 124) }; alarm $t; waitpid $pid, 0; exit($? & 127 ? 128 + ($? & 127) : $? >> 8)' "$limit")
+elif command -v timeout >/dev/null; then runner=(timeout -k 10 "$limit")
 elif command -v gtimeout >/dev/null; then runner=(gtimeout -k 10 "$limit")
-elif command -v perl >/dev/null; then runner=(perl -e '$t = shift; defined(my $pid = fork) or die "fork: $!\n"; if (!$pid) { setpgrp(0, 0); exec @ARGV or die "exec: $!\n" } my $stop = sub { kill $_[0] => -$pid; for (1 .. 10) { last if waitpid($pid, 1) > 0; sleep 1 } kill KILL => -$pid; waitpid $pid, 0; exit $_[1] }; for my $s (qw(INT TERM HUP)) { $SIG{$s} = sub { $stop->($s, 128 + { INT => 2, TERM => 15, HUP => 1 }->{$s}) } } $SIG{ALRM} = sub { $stop->(TERM => 124) }; alarm $t; waitpid $pid, 0; exit($? & 127 ? 128 + ($? & 127) : $? >> 8)' "$limit")
-else echo "cutover-audit: need timeout, gtimeout, or perl to bound --test and --live-check" >&2; exit 2; fi
+else echo "cutover-audit: need perl, timeout, or gtimeout to bound --test and --live-check" >&2; exit 2; fi
 
 for entry in "${specs[@]}"; do
   kind=${entry%%$'\t'*} spec=${entry#*$'\t'}
