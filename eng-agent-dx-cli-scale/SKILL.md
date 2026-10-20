@@ -1,6 +1,6 @@
 ---
-name: agent-dx-cli-scale
-description: A scoring scale for evaluating how well a CLI is designed for AI agents, based on the "Rewrite Your CLI for AI Agents" principles.
+name: eng-agent-dx-cli-scale
+description: A scoring scale for evaluating how well a CLI is designed for AI agents, based on the "Rewrite Your CLI for AI Agents" principles. Use when reviewing, designing, or comparing a CLI for agent use, or scoring its agent readiness.
 ---
 
 # Agent DX CLI Scale
@@ -9,7 +9,7 @@ Use this skill to **evaluate any CLI** against the principles of agent-first des
 
 > Human DX optimizes for discoverability and forgiveness.
 > Agent DX optimizes for predictability and defense-in-depth.
-> — [You Need to Rewrite Your CLI for AI Agents](/posts/rewrite-your-cli-for-ai-agents)
+> — [You Need to Rewrite Your CLI for AI Agents](https://justin.poehnelt.com/posts/rewrite-your-cli-for-ai-agents/)
 
 ---
 
