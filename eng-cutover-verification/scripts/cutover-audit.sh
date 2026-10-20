@@ -44,10 +44,11 @@ fail() { printf 'FAIL %s\n' "$1" >&2; failures=$((failures + 1)); }
 pass() { printf 'PASS %s\n' "$1"; }
 
 # Deadline every command: timeout(1), gtimeout (macOS coreutils), or a perl alarm; never unbounded.
-# Each signals the command's process group: TERM at the deadline, KILL 10s later if it is still running.
+# Each signals the command's process group: TERM at the deadline, KILL 10s later if it is still running,
+# and INT, TERM, or HUP sent to this script reaches the group too.
 if command -v timeout >/dev/null; then runner=(timeout -k 10 "$limit")
 elif command -v gtimeout >/dev/null; then runner=(gtimeout -k 10 "$limit")
-elif command -v perl >/dev/null; then runner=(perl -e '$t = shift; defined(my $pid = fork) or die "fork: $!\n"; if (!$pid) { setpgrp(0, 0); exec @ARGV or die "exec: $!\n" } $SIG{ALRM} = sub { kill TERM => -$pid; for (1 .. 10) { exit 124 if waitpid($pid, 1) > 0; sleep 1 } kill KILL => -$pid; waitpid $pid, 0; exit 124 }; alarm $t; waitpid $pid, 0; exit($? & 127 ? 128 + ($? & 127) : $? >> 8)' "$limit")
+elif command -v perl >/dev/null; then runner=(perl -e '$t = shift; defined(my $pid = fork) or die "fork: $!\n"; if (!$pid) { setpgrp(0, 0); exec @ARGV or die "exec: $!\n" } for my $s (qw(INT TERM HUP)) { $SIG{$s} = sub { kill $s => -$pid; exit 128 + { INT => 2, TERM => 15, HUP => 1 }->{$s} } } $SIG{ALRM} = sub { kill TERM => -$pid; for (1 .. 10) { exit 124 if waitpid($pid, 1) > 0; sleep 1 } kill KILL => -$pid; waitpid $pid, 0; exit 124 }; alarm $t; waitpid $pid, 0; exit($? & 127 ? 128 + ($? & 127) : $? >> 8)' "$limit")
 else echo "cutover-audit: need timeout, gtimeout, or perl to bound --test and --live-check" >&2; exit 2; fi
 
 for entry in "${specs[@]}"; do
