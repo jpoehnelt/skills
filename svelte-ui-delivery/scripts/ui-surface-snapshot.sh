@@ -37,9 +37,10 @@ for k in "${keywords[@]}"; do kw+=(-e "$k"); done
 excludes=(--glob '!**/node_modules/**' --glob '!**/dist/**' --glob '!**/build/**'
   --glob '!**/.svelte-kit/**' --glob '!**/storybook-static/**')
 # Deadline every call: timeout(1), gtimeout (macOS coreutils), or a perl alarm; never unbounded.
-if command -v timeout >/dev/null; then limit=(timeout 60)
-elif command -v gtimeout >/dev/null; then limit=(gtimeout 60)
-elif command -v perl >/dev/null; then limit=(perl -e 'alarm shift; exec @ARGV or die "exec: $!\n"' 60)
+# Each sends TERM at the deadline and KILL 10s later, so a command that ignores TERM still stops.
+if command -v timeout >/dev/null; then limit=(timeout -k 10 60)
+elif command -v gtimeout >/dev/null; then limit=(gtimeout -k 10 60)
+elif command -v perl >/dev/null; then limit=(perl -e '$t = shift; defined(my $pid = fork) or die "fork: $!\n"; if (!$pid) { exec @ARGV or die "exec: $!\n" } $SIG{ALRM} = sub { kill TERM => $pid; sleep 10; kill KILL => $pid; waitpid $pid, 0; exit 124 }; alarm $t; waitpid $pid, 0; exit($? & 127 ? 128 + ($? & 127) : $? >> 8)' 60)
 else echo "$(basename "$0"): need timeout, gtimeout, or perl to bound external calls" >&2; exit 2; fi
 
 # rg exit: 0 = matches, 1 = none, >1 = error (fatal).

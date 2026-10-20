@@ -56,9 +56,10 @@ default_branch() {
 }
 
 # Deadline every call: timeout(1), gtimeout (macOS coreutils), or a perl alarm; never unbounded.
-if command -v timeout >/dev/null; then limit_cmd=(timeout "$limit")
-elif command -v gtimeout >/dev/null; then limit_cmd=(gtimeout "$limit")
-elif command -v perl >/dev/null; then limit_cmd=(perl -e 'alarm shift; exec @ARGV or die "exec: $!\n"' "$limit")
+# Each sends TERM at the deadline and KILL 10s later, so a command that ignores TERM still stops.
+if command -v timeout >/dev/null; then limit_cmd=(timeout -k 10 "$limit")
+elif command -v gtimeout >/dev/null; then limit_cmd=(gtimeout -k 10 "$limit")
+elif command -v perl >/dev/null; then limit_cmd=(perl -e '$t = shift; defined(my $pid = fork) or die "fork: $!\n"; if (!$pid) { exec @ARGV or die "exec: $!\n" } $SIG{ALRM} = sub { kill TERM => $pid; sleep 10; kill KILL => $pid; waitpid $pid, 0; exit 124 }; alarm $t; waitpid $pid, 0; exit($? & 127 ? 128 + ($? & 127) : $? >> 8)' "$limit")
 else echo "$(basename "$0"): need timeout, gtimeout, or perl to bound external calls" >&2; exit 2; fi
 api() { "${limit_cmd[@]}" gh api "$@"; }
 # A failed section is reported and the rest still prints; the exit status stays non-zero.
