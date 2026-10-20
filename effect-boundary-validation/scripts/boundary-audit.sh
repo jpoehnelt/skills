@@ -34,7 +34,7 @@ for i in "${!paths[@]}"; do
   [[ "${paths[$i]}" != -* ]] || paths[$i]="./${paths[$i]}"
 done
 
-globs=(--glob '*.{ts,tsx,mts,cts,js,jsx,mjs,cjs,svelte}' --glob '!**/*.{test,spec}.*'
+globs=(--glob '*.{ts,tsx,mts,cts,js,jsx,mjs,cjs,svelte}'
   --glob '!**/node_modules/**' --glob '!**/dist/**' --glob '!**/build/**' --glob '!**/.svelte-kit/**')
 # Deadline every call: timeout(1), gtimeout (macOS coreutils), or a perl alarm; never unbounded.
 if command -v timeout >/dev/null; then limit=(timeout 60)
@@ -43,9 +43,12 @@ elif command -v perl >/dev/null; then limit=(perl -e 'alarm shift; exec @ARGV or
 else echo "$(basename "$0"): need timeout, gtimeout, or perl to bound external calls" >&2; exit 2; fi
 
 # rg exit: 0 = matches printed, 1 = none, >1 = error (fatal).
+# Bans cover every source file, tests included; the inventories below skip tests (no_tests).
+no_tests=(--glob '!**/*.{test,spec}.*')
 search() {
+  local pattern=$1; shift
   local status=0
-  "${limit[@]}" rg -n --max-columns 200 "${globs[@]}" -e "$1" -- "${paths[@]}" || status=$?
+  "${limit[@]}" rg -n --max-columns 200 "${globs[@]}" "$@" -e "$pattern" -- "${paths[@]}" || status=$?
   if ((status > 1)); then echo "boundary-audit: rg failed or timed out (exit $status)" >&2; exit 2; fi
   return "$status"
 }
@@ -61,15 +64,15 @@ if ((${#bans[@]} > 0)); then
 fi
 
 echo "Parse and cast sites (each should feed a schema decode or read trusted local data)"
-search 'JSON\.parse\(|\.json\(\)|\bevent\.data\b|as unknown as|\bas any\b|:\s*any\b|\.run<[^>]+>\(' || true
+search 'JSON\.parse\(|\.json\(\)|\bevent\.data\b|as unknown as|\bas any\b|:\s*any\b|\.run<[^>]+>\(' "${no_tests[@]}" || true
 
 echo
 echo "Signature and constant-time checks (verify raw bytes before parsing)"
-search 'timingSafeEqual|createHmac|crypto\.subtle\.(verify|sign)|verifySignature|[Ss]ignature' || true
+search 'timingSafeEqual|createHmac|crypto\.subtle\.(verify|sign)|verifySignature|[Ss]ignature' "${no_tests[@]}" || true
 
 echo
 echo "Schema decode sites"
-search 'Schema\.decode(Unknown)?[A-Za-z]*\b|Schema\.fromJsonString|onExcessProperty' || true
+search 'Schema\.decode(Unknown)?[A-Za-z]*\b|Schema\.fromJsonString|onExcessProperty' "${no_tests[@]}" || true
 
 if ((${#rules[@]} > 0)); then
   echo
