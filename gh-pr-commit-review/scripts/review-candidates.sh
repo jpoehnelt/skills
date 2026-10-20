@@ -4,7 +4,8 @@
 # GH_TIMEOUT bounds the gh call in seconds (default 60).
 set -euo pipefail
 
-cutoff="${1:?usage: review-candidates.sh <iso-8601-cutoff> [owner/repo]}"
+[[ -n "${1:-}" ]] || { echo "usage: review-candidates.sh <iso-8601-cutoff> [owner/repo]" >&2; exit 2; }
+cutoff="$1"
 limit="${GH_TIMEOUT:-60}"
 
 # Strict form keeps the comparison meaningful and the value safe to embed in the jq filter.

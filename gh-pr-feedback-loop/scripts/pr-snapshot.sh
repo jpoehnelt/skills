@@ -5,7 +5,8 @@
 # GH_TIMEOUT bounds each gh call in seconds (default 60).
 set -euo pipefail
 
-pr="${1:?usage: pr-snapshot.sh <pr-number-or-url> [owner/repo]}"
+[[ -n "${1:-}" ]] || { echo "usage: pr-snapshot.sh <pr-number-or-url> [owner/repo]" >&2; exit 2; }
+pr="$1"
 num="${pr##*/}"
 limit="${GH_TIMEOUT:-60}"
 
