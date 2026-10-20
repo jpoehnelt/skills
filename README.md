@@ -73,3 +73,7 @@ These skills hold no project-specific commands, paths, or names. Each one lists 
 | [alchemy-infra](./alchemy-infra/SKILL.md) | Change, deploy, and debug Alchemy v2 stacks and Infisical secrets. |
 | [sentry-bugfix](./sentry-bugfix/SKILL.md) | Triage Sentry errors for an environment and deliver a fix PR. |
 | [sentry-perf](./sentry-perf/SKILL.md) | Find and fix performance regressions from Sentry spans and web vitals. |
+
+## License
+
+[MIT](./LICENSE)
