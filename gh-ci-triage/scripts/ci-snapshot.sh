@@ -78,7 +78,7 @@ if [[ -n "$pr" ]]; then
 
   echo
   echo "Commit statuses (state, context, url)"
-  section api "repos/$repo/commits/$head_sha/status" \
+  section api "repos/$repo/commits/$head_sha/status?per_page=100" --paginate \
     --jq '.statuses[] | [.state, .context, (.target_url // "-")] | @tsv'
 
   echo

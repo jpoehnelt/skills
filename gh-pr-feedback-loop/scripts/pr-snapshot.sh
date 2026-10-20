@@ -49,7 +49,7 @@ section api "repos/$repo/commits/$head_sha/check-runs?per_page=100" --paginate \
   --jq '.check_runs[] | [.status, (.conclusion // "-"), .name, .html_url] | @tsv'
 
 echo '--- commit statuses (state, context, url) ---'
-section api "repos/$repo/commits/$head_sha/status" \
+section api "repos/$repo/commits/$head_sha/status?per_page=100" --paginate \
   --jq '.statuses[] | [.state, .context, (.target_url // "-")] | @tsv'
 
 echo '--- reviews (state, author, commit) ---'
