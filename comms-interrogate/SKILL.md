@@ -19,9 +19,12 @@ Identify what to review:
 
 ```sh
 git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null \
-  || { git rev-parse --verify -q origin/main >/dev/null && echo origin/main; } \
-  || echo origin/master
+  || for b in origin/main origin/master main master; do
+       git rev-parse --verify -q "$b" >/dev/null && { echo "$b"; break; }
+     done
 ```
+
+If it prints nothing, ask the user for the base branch.
 
 - If the user refers to recent work, gather those files with `git status` and `git diff`.
 
