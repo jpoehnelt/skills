@@ -54,9 +54,10 @@ echo '--- commit statuses (state, context, url) ---'
 section api "repos/$repo/commits/$head_sha/status?per_page=100" --paginate \
   --jq '.statuses[] | [.state, .context, (.target_url // "-")] | @tsv'
 
-echo '--- reviews (state, author, commit) ---'
+echo '--- reviews (id, state, author, commit, first line of body) ---'
 section api "repos/$repo/pulls/$num/reviews?per_page=100" --paginate \
-  --jq '.[] | [.state, .user.login, .commit_id[0:8]] | @tsv'
+  --jq '.[] | [.id, .state, .user.login, .commit_id[0:8],
+    ((.body // "") | split("\n") | map(select(test("\\S") and (startswith("<!--") | not))) | (.[0] // "-") | .[0:160])] | @tsv'
 
 # REST comments carry no resolved state; review threads (GraphQL) do. Some hosts
 # block GraphQL, so report that instead of implying there are no open threads.
