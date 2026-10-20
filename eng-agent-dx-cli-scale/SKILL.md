@@ -45,7 +45,7 @@ Can an agent discover what the CLI accepts at runtime without pre-stuffed docume
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0     | Only `--help` text. No machine-readable schema.                                                                                                         |
 | 1     | `--help --json` or a `describe` command for some surfaces, but incomplete.                                                                              |
-| 2     | Full schema introspection for all commands — params, types, required fields — as JSON.                                                                  |
+| 2     | Full schema introspection for all commands, including params, types, and required fields, as JSON.                                                                  |
 | 3     | Live, runtime-resolved schemas (e.g., from a discovery document) that always reflect the current API version. Includes scopes, enums, and nested types. |
 
 ### 4. Context Window Discipline
@@ -68,7 +68,7 @@ Does the CLI defend against the specific ways agents fail (hallucinations, not t
 | 0     | No input validation beyond basic type checks.                                                                                                                                           |
 | 1     | Validates some inputs, but does not cover agent-specific hallucination patterns (path traversals, embedded query params, double encoding).                                              |
 | 2     | Rejects control characters, path traversals (`../`), percent-encoded segments (`%2e`), and embedded query params (`?`, `#`) in resource IDs.                                            |
-| 3     | Comprehensive hardening: all of the above, plus output path sandboxing to CWD, HTTP-layer percent-encoding, and an explicit security posture — _"The agent is not a trusted operator."_ |
+| 3     | Comprehensive hardening: all of the above, plus output path sandboxing to CWD, HTTP-layer percent-encoding, and an explicit security posture: _"The agent is not a trusted operator."_ |
 
 ### 6. Safety Rails
 
@@ -109,6 +109,6 @@ Does the CLI ship knowledge in formats agents can consume at conversation start?
 
 Not scored, but note whether the CLI exposes multiple agent surfaces from the same binary:
 
-- [ ] **MCP (stdio JSON-RPC)** — typed tool invocation, no shell escaping
-- [ ] **Extension / plugin install** — agent treats the CLI as a native capability
-- [ ] **Headless auth** — env vars for tokens/credentials, no browser redirect required
+- [ ] **MCP (stdio JSON-RPC)**: typed tool invocation, no shell escaping
+- [ ] **Extension / plugin install**: agent treats the CLI as a native capability
+- [ ] **Headless auth**: env vars for tokens/credentials, no browser redirect required
