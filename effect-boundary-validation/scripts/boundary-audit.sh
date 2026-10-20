@@ -103,8 +103,9 @@ if ((${#rules[@]} > 0)); then
   else
     echo "ast-grep rules: ${rules[*]}"
     sg_status=0
-    "${limit[@]}" "$sg" scan --config sgconfig.yml --filter "$filter" --report-style short "${paths[@]}" || sg_status=$?
-    # ast-grep exits 1 for findings; anything higher (including a timeout) is a tool error.
+    "${limit[@]}" "$sg" scan --config sgconfig.yml --filter "$filter" --error --report-style short "${paths[@]}" || sg_status=$?
+    # --error makes warning and hint rules count too; ast-grep then exits 1 for any finding,
+    # and anything higher (including a timeout) is a tool error.
     if ((sg_status == 1)); then banned=1
     elif ((sg_status > 1)); then echo "boundary-audit: ast-grep failed or timed out (exit $sg_status)" >&2; exit 2; fi
   fi
