@@ -65,8 +65,12 @@ for entry in "${specs[@]}"; do
         continue
       fi
       if [[ "$scope_status" -eq 1 ]]; then
-        # A retired scope with no tracked files is fully retired; a required one cannot match.
-        if [[ "$kind" == retired ]]; then pass "retired: $label (scope absent: $scope)"; else fail "required: scope is not tracked: $scope"; fi
+        # An untracked retired scope counts as retired only if it was ever tracked; otherwise it is likely a typo.
+        # A shallow clone may lack that history; fetch more history rather than trust a pass.
+        if [[ "$kind" == retired ]]; then
+          if [[ -n "$(git log -1 --format=%h -- "$scope" 2>/dev/null)" ]]; then pass "retired: $label (scope removed: $scope)"
+          else fail "retired: $label scope was never tracked (typo or shallow clone?): $scope"; fi
+        else fail "required: scope is not tracked: $scope"; fi
         continue
       fi
       status=0
