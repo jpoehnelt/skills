@@ -74,6 +74,12 @@ search 'Schema\.decode(Unknown)?[A-Za-z]*\b|Schema\.fromJsonString|onExcessPrope
 if ((${#rules[@]} > 0)); then
   echo
   filter="^($(printf '%s|' "${rules[@]}" | sed 's/|$//'))$"
+  # Never run a binary the checkout itself supplies: a committed node_modules (for example
+  # a PR adding node_modules/.bin/ast-grep) is refused. An installed node_modules is only
+  # as trusted as the install that produced it; audit untrusted PRs with a global ast-grep.
+  if [[ -n "$(git ls-files -- node_modules | head -1)" ]]; then
+    echo "boundary-audit: refusing --rule: node_modules has tracked files in this checkout" >&2; exit 2
+  fi
   sg=""
   if [[ -x node_modules/.bin/ast-grep ]]; then sg=node_modules/.bin/ast-grep
   elif command -v ast-grep >/dev/null; then sg=ast-grep; fi
