@@ -55,11 +55,12 @@ default_branch() {
   fi
 }
 
-# Bound each call with timeout(1) when available (gtimeout on macOS with coreutils).
-limit_cmd=()
+# Deadline every call: timeout(1), gtimeout (macOS coreutils), or a perl alarm; never unbounded.
 if command -v timeout >/dev/null; then limit_cmd=(timeout "$limit")
-elif command -v gtimeout >/dev/null; then limit_cmd=(gtimeout "$limit"); fi
-api() { ${limit_cmd[@]+"${limit_cmd[@]}"} gh api "$@"; }
+elif command -v gtimeout >/dev/null; then limit_cmd=(gtimeout "$limit")
+elif command -v perl >/dev/null; then limit_cmd=(perl -e 'alarm shift; exec @ARGV or die "exec: $!\n"' "$limit")
+else echo "$(basename "$0"): need timeout, gtimeout, or perl to bound external calls" >&2; exit 2; fi
+api() { "${limit_cmd[@]}" gh api "$@"; }
 # A failed section is reported and the rest still prints; the exit status stays non-zero.
 failed=0
 section() { "$@" || { echo "ci-snapshot: section failed: ${*:2:1}" >&2; failed=1; }; }

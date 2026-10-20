@@ -34,12 +34,16 @@ done
 
 globs=(--glob '*.{ts,tsx,mts,cts,js,mjs,cjs,svelte}' --glob '!**/*.{test,spec}.*'
   --glob '!**/node_modules/**' --glob '!**/dist/**' --glob '!**/build/**' --glob '!**/.svelte-kit/**')
-limit=() ; command -v timeout >/dev/null && limit=(timeout 60)
+# Deadline every call: timeout(1), gtimeout (macOS coreutils), or a perl alarm; never unbounded.
+if command -v timeout >/dev/null; then limit=(timeout 60)
+elif command -v gtimeout >/dev/null; then limit=(gtimeout 60)
+elif command -v perl >/dev/null; then limit=(perl -e 'alarm shift; exec @ARGV or die "exec: $!\n"' 60)
+else echo "$(basename "$0"): need timeout, gtimeout, or perl to bound external calls" >&2; exit 2; fi
 
 # rg exit: 0 = matches printed, 1 = none, >1 = error (fatal).
 search() {
   local status=0
-  ${limit[@]+"${limit[@]}"} rg -n --max-columns 200 "${globs[@]}" -e "$1" "${paths[@]}" || status=$?
+  "${limit[@]}" rg -n --max-columns 200 "${globs[@]}" -e "$1" "${paths[@]}" || status=$?
   if ((status > 1)); then echo "boundary-audit: rg failed or timed out (exit $status)" >&2; exit 2; fi
   return "$status"
 }
@@ -71,13 +75,18 @@ if ((${#rules[@]} > 0)); then
   sg=""
   if [[ -x node_modules/.bin/ast-grep ]]; then sg=node_modules/.bin/ast-grep
   elif command -v ast-grep >/dev/null; then sg=ast-grep; fi
+  # A requested rule that cannot run is a tool error (exit 2), never a clean result.
   if [[ ! -f sgconfig.yml ]]; then
-    echo "ast-grep: no sgconfig.yml at repo root; skipping rules" >&2
+    echo "boundary-audit: --rule requested but no sgconfig.yml at repo root" >&2; exit 2
   elif [[ -z "$sg" ]]; then
-    echo "ast-grep: executable not found; install dependencies and rerun" >&2
+    echo "boundary-audit: --rule requested but ast-grep executable not found; install dependencies" >&2; exit 2
   else
     echo "ast-grep rules: ${rules[*]}"
-    ${limit[@]+"${limit[@]}"} "$sg" scan --config sgconfig.yml --filter "$filter" --report-style short "${paths[@]}" || banned=1
+    sg_status=0
+    "${limit[@]}" "$sg" scan --config sgconfig.yml --filter "$filter" --report-style short "${paths[@]}" || sg_status=$?
+    # ast-grep exits 1 for findings; anything higher (including a timeout) is a tool error.
+    if ((sg_status == 1)); then banned=1
+    elif ((sg_status > 1)); then echo "boundary-audit: ast-grep failed or timed out (exit $sg_status)" >&2; exit 2; fi
   fi
 fi
 

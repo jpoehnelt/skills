@@ -28,11 +28,12 @@ else
   repo="$(printf '%s' "$url" | sed -E 's#/+$##; s#\.git$##' | awk -F'[/:]' '{print $(NF-1) "/" $NF}')"
 fi
 
-# Bound each call with timeout(1) when available (gtimeout on macOS with coreutils).
-limit_cmd=()
+# Deadline every call: timeout(1), gtimeout (macOS coreutils), or a perl alarm; never unbounded.
 if command -v timeout >/dev/null; then limit_cmd=(timeout "$limit")
-elif command -v gtimeout >/dev/null; then limit_cmd=(gtimeout "$limit"); fi
-api() { ${limit_cmd[@]+"${limit_cmd[@]}"} gh api "$@"; }
+elif command -v gtimeout >/dev/null; then limit_cmd=(gtimeout "$limit")
+elif command -v perl >/dev/null; then limit_cmd=(perl -e 'alarm shift; exec @ARGV or die "exec: $!\n"' "$limit")
+else echo "$(basename "$0"): need timeout, gtimeout, or perl to bound external calls" >&2; exit 2; fi
+api() { "${limit_cmd[@]}" gh api "$@"; }
 # A failed section is reported and the rest still prints; the exit status stays non-zero.
 failed=0
 section() { "$@" || { echo "pr-snapshot: section failed: ${*:2:1}" >&2; failed=1; }; }
@@ -57,7 +58,7 @@ section api "repos/$repo/pulls/$num/reviews?per_page=100" --paginate \
 
 # REST comments carry no resolved state; review threads (GraphQL) do. Some hosts
 # block GraphQL, so report that instead of implying there are no open threads.
-echo '--- unresolved review threads (thread id, path, line, outdated, author, first line) ---'
+echo '--- unresolved review threads (thread id, path, line, outdated, comments, first author, first line, last author, last line) ---'
 if threads="$(api graphql --paginate -F owner="${repo%%/*}" -F name="${repo#*/}" -F num="$num" -f query='
 query($owner: String!, $name: String!, $num: Int!, $endCursor: String) {
   repository(owner: $owner, name: $name) {
@@ -66,15 +67,17 @@ query($owner: String!, $name: String!, $num: Int!, $endCursor: String) {
         pageInfo { hasNextPage endCursor }
         nodes {
           id isResolved isOutdated path line
-          comments(first: 1) { nodes { author { login } body } }
+          comments(first: 1) { totalCount nodes { author { login } body } }
+          latest: comments(last: 1) { nodes { author { login } body } }
         }
       }
     }
   }
 }' --jq '.data.repository.pullRequest.reviewThreads.nodes[]
   | select(.isResolved | not)
-  | [.id, .path, (.line // "-"), .isOutdated, (.comments.nodes[0].author.login // "-"),
-     ((.comments.nodes[0].body // "") | split("\n")[0] | .[0:120])] | @tsv' 2>/dev/null)"; then
+  | [.id, .path, (.line // "-"), .isOutdated, .comments.totalCount,
+     (.comments.nodes[0].author.login // "-"), ((.comments.nodes[0].body // "") | split("\n")[0] | .[0:120]),
+     (.latest.nodes[0].author.login // "-"), ((.latest.nodes[0].body // "") | split("\n")[0] | .[0:120])] | @tsv' 2>/dev/null)"; then
   [[ -z "$threads" ]] || printf '%s\n' "$threads"
 else
   echo "pr-snapshot: thread resolution state unavailable (GraphQL failed); read threads another way" >&2

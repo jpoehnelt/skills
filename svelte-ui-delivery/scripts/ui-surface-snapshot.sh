@@ -34,12 +34,16 @@ kw=()
 for k in "${keywords[@]}"; do kw+=(-e "$k"); done
 excludes=(--glob '!**/node_modules/**' --glob '!**/dist/**' --glob '!**/build/**'
   --glob '!**/.svelte-kit/**' --glob '!**/storybook-static/**')
-limit=(); command -v timeout >/dev/null && limit=(timeout 60)
+# Deadline every call: timeout(1), gtimeout (macOS coreutils), or a perl alarm; never unbounded.
+if command -v timeout >/dev/null; then limit=(timeout 60)
+elif command -v gtimeout >/dev/null; then limit=(gtimeout 60)
+elif command -v perl >/dev/null; then limit=(perl -e 'alarm shift; exec @ARGV or die "exec: $!\n"' 60)
+else echo "$(basename "$0"): need timeout, gtimeout, or perl to bound external calls" >&2; exit 2; fi
 
 # rg exit: 0 = matches, 1 = none, >1 = error (fatal).
 run_rg() {
   local status=0
-  ${limit[@]+"${limit[@]}"} rg "${excludes[@]}" "$@" || status=$?
+  "${limit[@]}" rg "${excludes[@]}" "$@" || status=$?
   if ((status > 1)); then echo "ui-surface-snapshot: rg failed or timed out (exit $status)" >&2; exit 2; fi
   return 0
 }

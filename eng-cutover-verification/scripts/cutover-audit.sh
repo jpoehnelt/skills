@@ -43,6 +43,12 @@ cd "$repo_root"
 fail() { printf 'FAIL %s\n' "$1" >&2; failures=$((failures + 1)); }
 pass() { printf 'PASS %s\n' "$1"; }
 
+# Deadline every command: timeout(1), gtimeout (macOS coreutils), or a perl alarm; never unbounded.
+if command -v timeout >/dev/null; then runner=(timeout "$limit")
+elif command -v gtimeout >/dev/null; then runner=(gtimeout "$limit")
+elif command -v perl >/dev/null; then runner=(perl -e 'alarm shift; exec @ARGV or die "exec: $!\n"' "$limit")
+else echo "cutover-audit: need timeout, gtimeout, or perl to bound --test and --live-check" >&2; exit 2; fi
+
 for entry in "${specs[@]}"; do
   kind=${entry%%$'\t'*} spec=${entry#*$'\t'}
   [[ "$spec" == ?*:::?* ]] || { fail "$kind: malformed spec $spec"; continue; }
@@ -73,8 +79,7 @@ for entry in "${specs[@]}"; do
       fi ;;
     test | live-check)
       printf 'RUN %s: %s\n' "$kind" "$label"
-      if command -v timeout >/dev/null 2>&1; then runner=(timeout "$limit"); else runner=(); fi
-      if ${runner[@]+"${runner[@]}"} bash -o pipefail -c "$rest"; then pass "$kind: $label"; else fail "$kind: $label"; fi ;;
+      if "${runner[@]}" bash -o pipefail -c "$rest"; then pass "$kind: $label"; else fail "$kind: $label"; fi ;;
   esac
 done
 
