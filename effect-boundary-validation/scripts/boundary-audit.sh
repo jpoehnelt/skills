@@ -34,7 +34,7 @@ for i in "${!paths[@]}"; do
   [[ "${paths[$i]}" != -* ]] || paths[$i]="./${paths[$i]}"
 done
 
-globs=(--glob '*.{ts,tsx,mts,cts,js,mjs,cjs,svelte}' --glob '!**/*.{test,spec}.*'
+globs=(--glob '*.{ts,tsx,mts,cts,js,jsx,mjs,cjs,svelte}' --glob '!**/*.{test,spec}.*'
   --glob '!**/node_modules/**' --glob '!**/dist/**' --glob '!**/build/**' --glob '!**/.svelte-kit/**')
 # Deadline every call: timeout(1), gtimeout (macOS coreutils), or a perl alarm; never unbounded.
 if command -v timeout >/dev/null; then limit=(timeout 60)
@@ -73,7 +73,14 @@ search 'Schema\.decode(Unknown)?[A-Za-z]*\b|Schema\.fromJsonString|onExcessPrope
 
 if ((${#rules[@]} > 0)); then
   echo
-  filter="^($(printf '%s|' "${rules[@]}" | sed 's/|$//'))$"
+  # ast-grep reads --filter as a regex: accept only plain IDs, escape dots, and require each
+  # requested ID to be declared in a tracked rule file, so a typo is an error, not a clean run.
+  for rule in "${rules[@]}"; do
+    [[ "$rule" =~ ^[A-Za-z0-9_.-]+$ ]] || { echo "boundary-audit: invalid --rule id: $rule" >&2; exit 2; }
+    git grep -qE "^id:[[:space:]]*['\"]?${rule//./\\.}['\"]?[[:space:]]*$" -- '*.yml' '*.yaml' \
+      || { echo "boundary-audit: --rule $rule is not declared by any tracked ast-grep rule file" >&2; exit 2; }
+  done
+  filter="^($(printf '%s|' "${rules[@]//./\\.}" | sed 's/|$//'))$"
   # Never run code the checkout itself supplies: a committed node_modules (for example a PR
   # adding node_modules/.bin/ast-grep) is refused, and so is an sgconfig.yml that could name
   # native parsers (customLanguages.<lang>.libraryPath), which ast-grep loads with dlopen. An installed
