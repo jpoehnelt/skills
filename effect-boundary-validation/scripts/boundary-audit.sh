@@ -28,8 +28,10 @@ command -v rg >/dev/null || { echo "boundary-audit: ripgrep (rg) is required" >&
 root="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "boundary-audit: not inside a git repository" >&2; exit 2; }
 cd "$root"
 ((${#paths[@]} > 0)) || paths=(.)
-for path in "${paths[@]}"; do
-  [[ -e "$path" ]] || { echo "boundary-audit: path does not exist: $path" >&2; exit 2; }
+for i in "${!paths[@]}"; do
+  [[ -e "${paths[$i]}" ]] || { echo "boundary-audit: path does not exist: ${paths[$i]}" >&2; exit 2; }
+  # A path that starts with "-" (for example a PR-added file named --pre=cmd) must never parse as an option.
+  [[ "${paths[$i]}" != -* ]] || paths[$i]="./${paths[$i]}"
 done
 
 globs=(--glob '*.{ts,tsx,mts,cts,js,mjs,cjs,svelte}' --glob '!**/*.{test,spec}.*'
@@ -43,7 +45,7 @@ else echo "$(basename "$0"): need timeout, gtimeout, or perl to bound external c
 # rg exit: 0 = matches printed, 1 = none, >1 = error (fatal).
 search() {
   local status=0
-  "${limit[@]}" rg -n --max-columns 200 "${globs[@]}" -e "$1" "${paths[@]}" || status=$?
+  "${limit[@]}" rg -n --max-columns 200 "${globs[@]}" -e "$1" -- "${paths[@]}" || status=$?
   if ((status > 1)); then echo "boundary-audit: rg failed or timed out (exit $status)" >&2; exit 2; fi
   return "$status"
 }

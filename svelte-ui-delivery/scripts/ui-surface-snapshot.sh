@@ -25,8 +25,10 @@ command -v rg >/dev/null || { echo "ui-surface-snapshot: ripgrep (rg) is require
 root="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "ui-surface-snapshot: not inside a git repository" >&2; exit 2; }
 cd "$root"
 ((${#roots[@]} > 0)) || roots=(.)
-for dir in "${roots[@]}"; do
-  [[ -d "$dir" ]] || { echo "ui-surface-snapshot: not a directory: $dir" >&2; exit 2; }
+for i in "${!roots[@]}"; do
+  [[ -d "${roots[$i]}" ]] || { echo "ui-surface-snapshot: not a directory: ${roots[$i]}" >&2; exit 2; }
+  # A root that starts with "-" must never parse as an rg option.
+  [[ "${roots[$i]}" != -* ]] || roots[$i]="./${roots[$i]}"
 done
 
 # Keywords are literal fragments, never regular expressions.
