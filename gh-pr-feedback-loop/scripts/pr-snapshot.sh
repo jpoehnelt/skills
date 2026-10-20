@@ -28,7 +28,11 @@ else
   repo="$(printf '%s' "$url" | sed -E 's#/+$##; s#\.git$##' | awk -F'[/:]' '{print $(NF-1) "/" $NF}')"
 fi
 
-api() { timeout "$limit" gh api "$@"; }
+# Bound each call with timeout(1) when available (gtimeout on macOS with coreutils).
+limit_cmd=()
+if command -v timeout >/dev/null; then limit_cmd=(timeout "$limit")
+elif command -v gtimeout >/dev/null; then limit_cmd=(gtimeout "$limit"); fi
+api() { ${limit_cmd[@]+"${limit_cmd[@]}"} gh api "$@"; }
 # A failed section is reported and the rest still prints; the exit status stays non-zero.
 failed=0
 section() { "$@" || { echo "pr-snapshot: section failed: ${*:2:1}" >&2; failed=1; }; }
@@ -59,6 +63,7 @@ query($owner: String!, $name: String!, $num: Int!) {
   repository(owner: $owner, name: $name) {
     pullRequest(number: $num) {
       reviewThreads(first: 100) {
+        pageInfo { hasNextPage }
         nodes {
           id isResolved isOutdated path line
           comments(first: 1) { nodes { author { login } body } }
@@ -66,11 +71,16 @@ query($owner: String!, $name: String!, $num: Int!) {
       }
     }
   }
-}' --jq '.data.repository.pullRequest.reviewThreads.nodes[]
-  | select(.isResolved | not)
-  | [.id, .path, (.line // "-"), .isOutdated, (.comments.nodes[0].author.login // "-"),
-     ((.comments.nodes[0].body // "") | split("\n")[0] | .[0:120])] | @tsv' 2>/dev/null)"; then
-  [[ -z "$threads" ]] || printf '%s\n' "$threads"
+}' --jq '.data.repository.pullRequest.reviewThreads
+  | (.nodes[] | select(.isResolved | not)
+    | [.id, .path, (.line // "-"), .isOutdated, (.comments.nodes[0].author.login // "-"),
+       ((.comments.nodes[0].body // "") | split("\n")[0] | .[0:120])] | @tsv),
+    (if .pageInfo.hasNextPage then "__MORE__" else empty end)' 2>/dev/null)"; then
+  [[ -z "$threads" ]] || grep -v '^__MORE__$' <<<"$threads" || true
+  if grep -q '^__MORE__$' <<<"$threads"; then
+    echo "pr-snapshot: more than 100 review threads; only the first 100 were checked" >&2
+    failed=1
+  fi
 else
   echo "pr-snapshot: thread resolution state unavailable (GraphQL failed); read threads another way" >&2
   failed=1

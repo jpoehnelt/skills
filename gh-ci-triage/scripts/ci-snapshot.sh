@@ -55,7 +55,11 @@ default_branch() {
   fi
 }
 
-api() { timeout "$limit" gh api "$@"; }
+# Bound each call with timeout(1) when available (gtimeout on macOS with coreutils).
+limit_cmd=()
+if command -v timeout >/dev/null; then limit_cmd=(timeout "$limit")
+elif command -v gtimeout >/dev/null; then limit_cmd=(gtimeout "$limit"); fi
+api() { ${limit_cmd[@]+"${limit_cmd[@]}"} gh api "$@"; }
 # A failed section is reported and the rest still prints; the exit status stays non-zero.
 failed=0
 section() { "$@" || { echo "ci-snapshot: section failed: ${*:2:1}" >&2; failed=1; }; }
@@ -81,7 +85,8 @@ if [[ -n "$pr" ]]; then
   section api "repos/$repo/actions/runs?head_sha=$head_sha&per_page=20" \
     --jq '.workflow_runs[] | [.id, .name, .status, (.conclusion // "-"), .html_url] | @tsv'
 else
-  base="$(default_branch)"
+  # The selected repository's default branch; fall back to the local origin's.
+  base="$(api "repos/$repo" --jq .default_branch 2>/dev/null)" || base="$(default_branch)"
 fi
 
 if [[ -n "$workflow" ]]; then

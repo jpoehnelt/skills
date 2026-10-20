@@ -29,8 +29,9 @@ for dir in "${roots[@]}"; do
   [[ -d "$dir" ]] || { echo "ui-surface-snapshot: not a directory: $dir" >&2; exit 2; }
 done
 
-pattern="$(printf '%s|' "${keywords[@]}")"
-pattern="${pattern%|}"
+# Keywords are literal fragments, never regular expressions.
+kw=()
+for k in "${keywords[@]}"; do kw+=(-e "$k"); done
 excludes=(--glob '!**/node_modules/**' --glob '!**/dist/**' --glob '!**/build/**'
   --glob '!**/.svelte-kit/**' --glob '!**/storybook-static/**')
 limit=(); command -v timeout >/dev/null && limit=(timeout 60)
@@ -38,7 +39,7 @@ limit=(); command -v timeout >/dev/null && limit=(timeout 60)
 # rg exit: 0 = matches, 1 = none, >1 = error (fatal).
 run_rg() {
   local status=0
-  "${limit[@]}" rg "${excludes[@]}" "$@" || status=$?
+  ${limit[@]+"${limit[@]}"} rg "${excludes[@]}" "$@" || status=$?
   if ((status > 1)); then echo "ui-surface-snapshot: rg failed or timed out (exit $status)" >&2; exit 2; fi
   return 0
 }
@@ -47,19 +48,19 @@ files=$(run_rg --files "${roots[@]}")
 section() { echo; echo "== $1"; }
 
 section "Components matching: ${keywords[*]}"
-grep -E '/components/.*\.svelte$' <<<"$files" | grep -iE -- "$pattern" | head -80 || true
+grep -E '/components/.*\.svelte$' <<<"$files" | grep -iF "${kw[@]}" | head -80 || true
 
 section "Shared primitive folders (ui/, packages/ui)"
 grep -E '(/components/ui/|packages/ui/src/)' <<<"$files" | sed -E 's#/[^/]+$##' | sort -u | head -60 || true
 
 section "Routes matching"
-grep -E '/routes/' <<<"$files" | grep -iE -- "$pattern" | head -60 || true
+grep -E '/routes/' <<<"$files" | grep -iF "${kw[@]}" | head -60 || true
 
 section "Consumers (files referencing the keywords)"
-run_rg -li --glob '*.{svelte,ts,js}' -e "$pattern" "${roots[@]}" | grep -vE '\.(test|spec|stories)\.' | head -80 || true
+run_rg -li -F --glob '*.{svelte,ts,js}' "${kw[@]}" "${roots[@]}" | grep -vE '\.(test|spec|stories)\.' | head -80 || true
 
 section "Stories and tests matching"
-grep -E '\.(stories|story|test|spec)\.(ts|js|svelte)$' <<<"$files" | grep -iE -- "$pattern" | head -60 || true
+grep -E '\.(stories|story|test|spec)\.(ts|js|svelte)$' <<<"$files" | grep -iF "${kw[@]}" | head -60 || true
 
 section "Theme tokens and fonts (global CSS)"
 css=$(grep -E '(^|/)(app|global|globals|theme|tokens)\.css$' <<<"$files" | head -5 || true)

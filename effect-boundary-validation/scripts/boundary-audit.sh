@@ -39,7 +39,7 @@ limit=() ; command -v timeout >/dev/null && limit=(timeout 60)
 # rg exit: 0 = matches printed, 1 = none, >1 = error (fatal).
 search() {
   local status=0
-  "${limit[@]}" rg -n --max-columns 200 "${globs[@]}" -e "$1" "${paths[@]}" || status=$?
+  ${limit[@]+"${limit[@]}"} rg -n --max-columns 200 "${globs[@]}" -e "$1" "${paths[@]}" || status=$?
   if ((status > 1)); then echo "boundary-audit: rg failed or timed out (exit $status)" >&2; exit 2; fi
   return "$status"
 }
@@ -77,7 +77,7 @@ if ((${#rules[@]} > 0)); then
     echo "ast-grep: executable not found; install dependencies and rerun" >&2
   else
     echo "ast-grep rules: ${rules[*]}"
-    "${limit[@]}" "$sg" scan --config sgconfig.yml --filter "$filter" --report-style short "${paths[@]}" || banned=1
+    ${limit[@]+"${limit[@]}"} "$sg" scan --config sgconfig.yml --filter "$filter" --report-style short "${paths[@]}" || banned=1
   fi
 fi
 
