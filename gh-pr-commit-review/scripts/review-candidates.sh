@@ -7,6 +7,7 @@ set -euo pipefail
 [[ -n "${1:-}" ]] || { echo "usage: review-candidates.sh <iso-8601-cutoff> [owner/repo]" >&2; exit 2; }
 cutoff="$1"
 limit="${GH_TIMEOUT:-60}"
+[[ "$limit" =~ ^[1-9][0-9]*$ ]] || { echo "review-candidates: GH_TIMEOUT must be a positive number of seconds" >&2; exit 2; }
 
 # Strict form keeps the comparison meaningful and the value safe to embed in the jq filter.
 [[ "$cutoff" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$ ]] || {

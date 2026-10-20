@@ -29,6 +29,7 @@ if [[ "$pr" =~ github\.com[/:]([^/]+/[^/]+)/pull/([0-9]+) ]]; then
 fi
 pr="${pr##*/}"
 limit="${GH_TIMEOUT:-60}"
+[[ "$limit" =~ ^[1-9][0-9]*$ ]] || { echo "ci-snapshot: GH_TIMEOUT must be a positive number of seconds" >&2; exit 2; }
 
 command -v gh >/dev/null || { echo "ci-snapshot: gh is required" >&2; exit 2; }
 
