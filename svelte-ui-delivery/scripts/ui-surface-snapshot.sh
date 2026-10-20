@@ -61,7 +61,9 @@ section "Routes matching"
 grep -E '/routes/' <<<"$files" | grep -iF "${kw[@]}" | head -60 || true
 
 section "Consumers (files referencing the keywords)"
-run_rg -li -F --glob '*.{svelte,ts,js}' "${kw[@]}" "${roots[@]}" | grep -vE '\.(test|spec|stories)\.' | head -80 || true
+# Capture first so an rg failure exits 2 instead of vanishing in the pipeline.
+consumers=$(run_rg -li -F --glob '*.{svelte,ts,js}' "${kw[@]}" "${roots[@]}")
+grep -vE '\.(test|spec|stories)\.' <<<"$consumers" | head -80 || true
 
 section "Stories and tests matching"
 grep -E '\.(stories|story|test|spec)\.(ts|js|svelte)$' <<<"$files" | grep -iF "${kw[@]}" | head -60 || true
@@ -71,7 +73,8 @@ css=$(grep -E '(^|/)(app|global|globals|theme|tokens)\.css$' <<<"$files" | head 
 if [[ -n "$css" ]]; then
   while IFS= read -r f; do
     echo "-- $f"
-    run_rg -n -e '^\s*--[a-z0-9-]+\s*:|font-family|@theme|@custom-variant|prefers-reduced-motion|\.dark\b' "$f" | head -40
+    tokens=$(run_rg -n -e '^\s*--[a-z0-9-]+\s*:|font-family|@theme|@custom-variant|prefers-reduced-motion|\.dark\b' "$f")
+    [[ -z "$tokens" ]] || head -40 <<<"$tokens"
   done <<<"$css"
 else
   echo "(no app/global/theme CSS found)"

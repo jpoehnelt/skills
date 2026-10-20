@@ -83,7 +83,7 @@ if [[ -n "$pr" ]]; then
 
   echo
   echo "Workflow runs for $head_sha (id, workflow, status, conclusion, url)"
-  section api "repos/$repo/actions/runs?head_sha=$head_sha&per_page=20" \
+  section api "repos/$repo/actions/runs?head_sha=$head_sha&per_page=100" --paginate \
     --jq '.workflow_runs[] | [.id, .name, .status, (.conclusion // "-"), .html_url] | @tsv'
 else
   # The selected repository's default branch; fall back to the local origin's.
