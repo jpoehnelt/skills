@@ -5,7 +5,7 @@ description: Decode untrusted data once at ingress with Effect Schema (v4) and p
 
 # Boundary validation
 
-Decode untrusted data once, at the ingress, then pass the decoded type downstream. TypeScript types, `satisfies`, and `as` casts are not runtime validation. Assumes Effect v4 `Schema` (`import * as Schema from "effect/Schema"`); see `effect` for errors and runners.
+Decode untrusted data once, at the ingress, then pass the decoded type downstream. TypeScript types, `satisfies`, and `as` casts are not runtime validation. Assumes Effect v4 `Schema`, imported the way the repo's import policy says (the `effect` root or `effect/Schema`); see `effect` for errors and runners.
 
 Repo facts (from AGENTS.md): where shared wire schemas live, retired schema libraries, safe-decode helpers, ast-grep boundary rules, the public error shape, and check and test commands.
 
