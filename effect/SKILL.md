@@ -5,7 +5,7 @@ description: Apply Effect v4 conventions for services, layers, tagged errors, bo
 
 # Effect v4
 
-Assumes Effect v4 (the `effect@4.0.x` line, including its release candidates). Effect 3 differs in names and modules (`Context.Tag`, `Effect.catchAll`, `@effect/platform`); do not mix the two. Read the installed version before using an API you have not seen in the repo, and follow the repo's AGENTS.md where it is stricter than this skill.
+Assumes Effect v4 (the `effect@4.0.x` line, including its release candidates). Effect 3 differs in names and modules (`Context.Tag`, `Effect.catchAll`, `@effect/platform`); do not mix the two. Read the installed version before using an API you have not seen in the repo, and follow the repo's AGENTS.md where it differs from this skill: a repo rule or a documented exception wins.
 
 Repo facts (from AGENTS.md): pinned Effect version and how bumps land, import policy (deep imports, `effect/unstable/*` barrels), boundary runners and the shared `ManagedRuntime`, the house error file, Effect lint gates, test runner and helpers, check and test commands.
 

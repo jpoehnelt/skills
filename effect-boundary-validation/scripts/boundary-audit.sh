@@ -49,7 +49,8 @@ if ((${#bans[@]} > 0)); then
   alt="$(printf '%s|' "${bans[@]}" | sed 's/[.[\*^$()+?{}]/\\&/g')"
   alt="${alt%|}"
   echo "Banned imports: ${bans[*]} (must be empty)"
-  if search "(from|import|require\\()\\s*['\"\`]($alt)(/[^'\"\`]*)?['\"\`]"; then banned=1; fi
+  # Static imports, re-exports, side-effect imports, dynamic import(), and require().
+  if search "\\b(from|import|require)\\s*\\(?\\s*['\"\`]($alt)(/[^'\"\`]*)?['\"\`]"; then banned=1; fi
   echo
 fi
 

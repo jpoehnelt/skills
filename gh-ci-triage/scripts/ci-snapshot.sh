@@ -21,11 +21,20 @@ while getopts ":R:w:" opt; do
 done
 shift $((OPTIND - 1))
 pr="${1:-}"
+# A GitHub PR URL carries its own repository; use it unless one is passed explicitly.
+url_repo=""
+if [[ "$pr" =~ github\.com[/:]([^/]+/[^/]+)/pull/([0-9]+) ]]; then
+  url_repo="${BASH_REMATCH[1]}"
+  pr="${BASH_REMATCH[2]}"
+fi
 pr="${pr##*/}"
 limit="${GH_TIMEOUT:-60}"
 
 command -v gh >/dev/null || { echo "ci-snapshot: gh is required" >&2; exit 2; }
 
+if [[ -z "$repo" && -n "$url_repo" ]]; then
+  repo="$url_repo"
+fi
 if [[ -z "$repo" ]]; then
   url="$(git remote get-url origin)" || { echo "ci-snapshot: no origin remote; pass -R owner/repo" >&2; exit 2; }
   # Last two path segments, so https, ssh, and proxied remotes all work.
