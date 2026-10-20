@@ -63,7 +63,7 @@ if ((${#bans[@]} > 0)); then
   echo "Banned imports: ${bans[*]} (must be empty)"
   # Static imports, re-exports, side-effect imports, dynamic import(), and require(), including
   # forms split across lines (-U lets \s match newlines) or with block or line comments around the opening parenthesis.
-  if search "\\b(from|import|require)(\\s|/\\*[\\s\\S]*?\\*/|//[^\\n]*)*\\(?(\\s|/\\*[\\s\\S]*?\\*/|//[^\\n]*)*['\"\`]($alt)(/[^'\"\`]*)?['\"\`]" -U; then banned=1; fi
+  if search "\\b(from|import|require)(\\s|/\\*[\\s\\S]*?\\*/|//[^\\n]*\\n)*\\(?(\\s|/\\*[\\s\\S]*?\\*/|//[^\\n]*\\n)*['\"\`]($alt)(/[^'\"\`]*)?['\"\`]" -U; then banned=1; fi
   echo
 fi
 
