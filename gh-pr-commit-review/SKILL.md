@@ -18,7 +18,7 @@ Repo facts (from AGENTS.md or CLAUDE.md): engineering rules and invariants to re
 ## Build the diff
 
 1. Fetch the live head and the PR's actual base ref. A stacked PR's base is its parent branch, not the default branch. Refresh the base ref explicitly before diffing.
-2. Review what is new since your last review, not commits dated after the cutoff: commit dates do not show when a branch was pushed. Take the `commit_id` of your latest review on the PR (`gh api repos/<owner>/<repo>/pulls/<n>/reviews`) and diff it to the live head. With no earlier review, review the full base-to-head diff. For a rebased series, `git range-diff <old-base>..<old-head> <new-base>..<new-head>` separates semantic changes from replay noise.
+2. Review what is new since your last review, not commits dated after the cutoff: commit dates do not show when a branch was pushed. Take the `commit_id` of your latest review on the PR (`gh api --paginate repos/<owner>/<repo>/pulls/<n>/reviews --jq '.[] | select(.user.login == "<you>") | .commit_id' | tail -n 1`; pages run oldest first, so take the last line) and diff it to the live head. With no earlier review, review the full base-to-head diff. For a rebased series, `git range-diff <old-base>..<old-head> <new-base>..<new-head>` separates semantic changes from replay noise.
 
 ## What to flag
 
