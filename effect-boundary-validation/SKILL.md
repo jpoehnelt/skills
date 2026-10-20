@@ -11,7 +11,7 @@ Repo facts (from AGENTS.md): where shared wire schemas live, retired schema libr
 
 ## Inventory the boundary
 
-Run `scripts/boundary-audit.sh [--ban MODULE]... [--rule RULE_ID]... [paths]` on the changed paths. It lists parse and cast sites, signature checks, and decode sites, fails on imports of any `--ban` module (for example `--ban zod --ban valibot`), and runs the named ast-grep rules when the repo has `sgconfig.yml`. For each change, name:
+Run `scripts/boundary-audit.sh [--ban MODULE]... [--rule RULE_ID]... [paths]` on the changed paths. It lists parse and cast sites, signature checks, and decode sites, fails on imports of any `--ban` module (for example `--ban zod --ban valibot`; a text search, so enforce a ban structurally with an ast-grep rule), and runs the named ast-grep rules when the repo has `sgconfig.yml`. For each change, name:
 
 1. The ingress point (route, webhook, message or topic handler, RPC method, upstream response, env read, stored row).
 2. The owning schema: shared wire schemas live in the contract package when several packages consume them; local-only shapes stay beside their consumer.
