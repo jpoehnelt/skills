@@ -13,6 +13,16 @@ limit="${GH_TIMEOUT:-60}"
   echo "review-candidates: cutoff must be UTC, YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ" >&2
   exit 2
 }
+# The shape check passes 2026-99-99 or T99:00:00Z; reject dates and times that do not exist.
+y=$((10#${cutoff:0:4})) m=$((10#${cutoff:5:2})) d=$((10#${cutoff:8:2}))
+days=(31 28 31 30 31 30 31 31 30 31 30 31)
+((y % 4 == 0 && (y % 100 != 0 || y % 400 == 0))) && days[1]=29
+valid=true
+((m >= 1 && m <= 12)) && ((d >= 1 && d <= days[m - 1])) || valid=false
+if [[ "$valid" == true && ${#cutoff} -gt 10 ]]; then
+  ((10#${cutoff:11:2} <= 23 && 10#${cutoff:14:2} <= 59 && 10#${cutoff:17:2} <= 59)) || valid=false
+fi
+[[ "$valid" == true ]] || { echo "review-candidates: cutoff is not a real UTC date and time: $cutoff" >&2; exit 2; }
 
 command -v gh >/dev/null || { echo "review-candidates: gh is required" >&2; exit 2; }
 
