@@ -1,7 +1,6 @@
 ---
 name: comms-technical-writing
 description: Layered technical-writing standard covering document modes, sentence style, instruction rules, and unambiguous syntax. Use when writing or reviewing skills, docs, READMEs, RFCs, PR descriptions, or commit messages.
-disable-model-invocation: true
 ---
 
 # Technical writing

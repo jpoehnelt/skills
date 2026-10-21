@@ -1,7 +1,6 @@
 ---
 name: agents-create-verification-skill
 description: Generate a project-local verify skill that drives the app like a user through a browser with Playwright, a CLI, or HTTP. Use for /agents-create-verification-skill, "make a verify skill for this repo", or when a project has no scripted way to prove UI, CLI, or service behavior.
-disable-model-invocation: true
 ---
 
 # Create a verification skill

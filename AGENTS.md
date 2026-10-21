@@ -29,7 +29,7 @@ Renaming a skill changes its install path. Update every cross-reference and the 
 
 - **No private names.** A skill never names a private organization, repository, product, package scope, internal domain, service, environment, secret path, or a skill that lives only in another repo. Public tools and platforms (Effect, Svelte, Cloudflare, Sentry, Alchemy, Infisical, GitHub) are fine as general examples. Use a neutral example when a real one would identify a private project.
 - **Repo facts come from the installing repo.** Do not inline project commands, paths, or names. Each skill has a `Repo facts` line listing what it expects the repo's `AGENTS.md` or `CLAUDE.md` to provide, such as check commands, environments, or a Sentry project.
-- **Frontmatter.** `name` matches the folder. `description` says what the skill does and includes a "Use when ..." trigger, in under about 400 characters. Set `disable-model-invocation: true` only for skills that should run when a user asks for them by name.
+- **Frontmatter.** `name` matches the folder. `description` says what the skill does and includes a "Use when ..." trigger, in under about 400 characters. Do not set `disable-model-invocation`: some agents then never load the skill, even by name, and cross-references to it break.
 - **Cross-references** name other skills in this repo by their current names in backticks. Never reference a skill outside this repo; describe the need instead ("the repo's deploy guidance").
 - **Length.** Keep `SKILL.md` short, usually under 100 lines. Move long reference material to `references/`.
 - **Prose** follows `comms-technical-writing` and `comms-unslop`. No emojis.

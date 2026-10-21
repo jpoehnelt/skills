@@ -1,7 +1,6 @@
 ---
 name: comms-interrogate
 description: Multi-reviewer critique of a diff, run as parallel read-only subagents from distinct angles, then synthesized into one verdict. Use for "interrogate", "adversarial review", "challenge this", "stress test this code", "find blind spots", or "tear this apart".
-disable-model-invocation: true
 ---
 
 # Interrogate

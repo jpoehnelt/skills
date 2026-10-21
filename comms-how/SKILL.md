@@ -1,7 +1,6 @@
 ---
 name: comms-how
 description: Explain how a subsystem works, its architecture, runtime flow, and where new code belongs. Use for "how does X work", walkthroughs before changing something, and placement or ownership questions like "where should this live" or "which package owns this". Use comms-why for motivation.
-disable-model-invocation: true
 ---
 
 # How

@@ -1,7 +1,6 @@
 ---
 name: comms-why
 description: Explain why code is shaped the way it is, using git history, PRs, and connected MCP evidence, with citations and honest confidence. Use for "why does X work this way", "why did we pick Y", design rationale, regressions, and postmortems. Use comms-how for runtime behavior.
-disable-model-invocation: true
 ---
 
 # Why

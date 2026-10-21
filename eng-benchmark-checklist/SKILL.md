@@ -1,7 +1,6 @@
 ---
 name: eng-benchmark-checklist
 description: Vet a performance measurement for limiter, tuning, limits, errors, repeatability, relevance, and whether the work happened before you report or act on it. Use when you run a benchmark or report a measured speedup or regression.
-disable-model-invocation: true
 ---
 
 # Benchmark checklist
