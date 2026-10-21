@@ -13,7 +13,7 @@ Repo facts (from AGENTS.md or CLAUDE.md): the machine helper and where machines 
 
 ## Define the machine
 
-- **States and moves, in one place.** List every state, every command, and each allowed `from -> to` move. Mark the initial and terminal states. Name states and commands in domain terms (`approve`, `cancelled`), not UI or storage terms.
+- **States and moves, in one place.** List every state, every command, and each allowed `from -> to` move. Mark the states a new entity starts in and any terminal states. A lifecycle that cycles (open, closed, open again) has no terminal state, and that is valid. Name states and commands in domain terms (`approve`, `cancelled`), not UI or storage terms.
 - **Decide every (state, command) pair.** Each pair not listed as a move is either rejected or an explicit no-op. Repeating a command that already took effect (archive an archived entity) is usually a no-op so retries stay safe; anything else is a rejection. An unhandled pair is how illegal moves slip through.
 - **Modes live in the status, data lives beside it.** No boolean that restates the status (`isArchived` next to `status = 'archived'`). Per-state data is a union: a `cancelled` entity carries its `reason`, an `active` one does not.
 - **Derived statuses are never stored.** If a status follows from other fields (ready when every check passed, expired when `expires_at` is past), compute it on read. A stored copy is a second source of truth that drifts, and a stored "expired" needs a job that can fall behind.
@@ -57,9 +57,9 @@ No other code sets the status field. Add a lint or grep check that flags writes 
 
 ## Tests
 
-- **Check the graph.** Every state is reachable from the initial state, every non-terminal state can reach a terminal one, terminal states have no outgoing moves, and every move names states that exist. Run this as one test over the machine definition.
+- **Check the graph.** Every move names states that exist, and every state is reachable from a starting state. When the machine declares terminal states, every other state can reach one and no terminal state has an outgoing move. Run this as one test over the machine definition.
 - **Test `decide` with a table** over every (state, command) pair: each move, each no-op, and each rejection. It is pure, so the table is fast and complete.
-- **Test the write helper once for concurrency:** two moves from the same `from`, one wins, one gets a conflict.
+- **Test the write helper once for concurrency:** two moves from the same `from`, and exactly one applies. With a row lock the second call waits, reads the new state, and `decide` rejects it or returns a no-op. With a lock-free guarded update the second gets a conflict.
 - **Reactions** get one test for a duplicate event and one for an out-of-order event.
 - **For complex machines**, a property-based stateful test (for example Hypothesis `RuleBasedStateMachine` or fast-check model-based testing) runs random command sequences and checks invariants after every step.
 
@@ -71,5 +71,5 @@ No other code sets the status field. Add a lint or grep check that flags writes 
 - The write is guarded on `from` and records the transition in the same transaction.
 - No status write exists outside the helper, and a check enforces it.
 - Events come from the durable record; reactions deduplicate on the transition id and reread state.
-- The graph test passes: every state is reachable, every non-terminal state can reach a terminal one, and no terminal state has an outgoing move.
+- The graph test passes: every state is reachable, and when terminal states are declared, every other state can reach one and none has an outgoing move.
 - A refactor allows every move the old code made; tightening is a separate, named decision. A renamed state ships with a data migration.

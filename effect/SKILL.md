@@ -63,8 +63,8 @@ const load = Effect.fn("loadOrder")(function* (id: string) {
 
 Effect v4 has no state-machine module. Follow `eng-state-machine` for the design; this is how its parts map to Effect.
 
-- `decide` is plain TypeScript with no `Effect`, `Clock`, or service. Use `Match.valueTags` or `Match.exhaustive` over a `Schema.TaggedUnion` of commands so a missing (state, command) pair is a type error.
-- Decode the stored status at the boundary with `Schema.Literals([...states])`, so an unknown value never reaches `decide`.
+- `decide` is plain TypeScript with no `Effect`, `Clock`, or service. If the repo provides a machine kernel (see its repo facts), use that kernel's `decide`. Otherwise match on both dimensions so a missing (state, command) pair is a type error: an outer `Match.exhaustive` over the state union with an inner one over the `Schema.TaggedUnion` of commands, or one match over a union of pairs. Matching commands alone only proves every command has a handler.
+- Decode the stored status at the boundary with `Schema.Literals([...states])`, so an unknown value never reaches `decide`, unless the kernel's `decide` already rejects unknown states as data.
 - `decide` returns a rejection as data. The write turns it into the owning package's tagged error; do not make `decide` fail in the error channel.
 - The write is one `Effect.fn` inside the repo's transaction: lock or read, `decide`, guarded update, outbox row. Read time and ids from `Clock` and the id service and pass them to `decide`. A guarded update that misses fails with a conflict tag the caller retries (`Effect.retry({ while: (e) => e._tag === "...Conflict", times })`); a miss under a row lock is a defect.
 - An in-memory machine (session, connection, worker) serializes moves with `SynchronizedRef.modifyEffect` and publishes states with `SubscriptionRef.changes`. Multi-step processes that wait on time or events belong in the repo's workflow engine, not in an entity machine.
