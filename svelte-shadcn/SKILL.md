@@ -42,7 +42,7 @@ Repo facts (from AGENTS.md or the app's AGENTS.md): where generated and shared p
 ## Publishing primitives from a package
 
 - One subpath export per family (`<pkg>/button`) pointing at its `index.ts` or the built `dist` file, with `svelte` and `types` conditions. No root barrel, so consumers load only what they import.
-- The package ships its token CSS; consumers import it once and do not redefine the tokens.
+- The package ships its token CSS. Consumers import it once and theme by overriding token values in `:root` and `.dark`. They keep the token names and never restyle a component's classes.
 
 ## Re-sync a generated component
 
