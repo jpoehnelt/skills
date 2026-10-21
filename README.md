@@ -71,6 +71,7 @@ These skills hold no project-specific commands, paths, or names. Each one lists 
 | [effect-boundary-validation](./effect-boundary-validation/SKILL.md) | Decode untrusted input once at ingress with Effect Schema. |
 | [effect-seam-migration](./effect-seam-migration/SKILL.md) | Extract domain logic into Effect packages before moving it to another runtime. |
 | [svelte-ui-delivery](./svelte-ui-delivery/SKILL.md) | Build and verify Svelte 5 UI changes with rendered evidence. |
+| [svelte-shadcn](./svelte-shadcn/SKILL.md) | Write and customize shadcn-svelte components: Bits UI, tailwind-variants, and Tailwind v4 tokens. |
 | [alchemy-infra](./alchemy-infra/SKILL.md) | Change, deploy, and debug Alchemy v2 stacks and Infisical secrets. |
 | [sentry-bugfix](./sentry-bugfix/SKILL.md) | Triage Sentry errors for an environment and deliver a fix PR. |
 | [sentry-perf](./sentry-perf/SKILL.md) | Find and fix performance regressions from Sentry spans and web vitals. |
