@@ -31,7 +31,7 @@ type Decision<S> =
   | { kind: "rejected"; from: S; command: string; reason: string };
 ```
 
-The caller turns a rejection into the owning module's error at the write site. Because guards take their data as input, the same rule runs in tests, in previews ("can I archive this?"), and in the write. Time-based moves (expiry, timeouts) are commands too: a scheduler sends them with the current time, and `decide` checks the deadline.
+The caller turns a rejection into the owning module's error at the write site. Because guards take their data as input, the same rule runs in tests, in previews ("can I archive this?"), and in the write. Time-based moves (expiry, timeouts) are commands too: a scheduler sends them with the current time, and `decide` checks the deadline. Effect repos: see the state machine section of `effect`.
 
 ## Write through one path
 
