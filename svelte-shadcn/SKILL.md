@@ -47,7 +47,7 @@ Repo facts (from AGENTS.md or the app's AGENTS.md): where generated and shared p
 ## Re-sync a generated component
 
 1. Note the local edits: `git log -p -- <component dir>`.
-2. Run `add <name> --overwrite`, then reapply the edits from the diff, starting with tokens, radius, and variants.
+2. Run `pnpm dlx shadcn-svelte@latest add <name> --overwrite`, then reapply the edits from the diff, starting with tokens, radius, and variants.
 3. Review the full diff before committing. An upstream change to a variant or token name is a breaking change for consumers.
 
 ## Review checklist
