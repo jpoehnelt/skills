@@ -18,7 +18,7 @@ Repo facts (from AGENTS.md or CLAUDE.md): validation and check commands, commit 
 ## Publish
 
 1. Use the repo's commit and PR title convention (often Conventional Commits). Keep a PR to one concern; stack PRs only when one truly depends on another.
-2. Fill the PR template and any required metadata. Describe the observable change and the validation you ran (`comms-technical-writing`).
+2. Fill the PR template and any required metadata. Describe the observable change (`comms-impact` for who it affects, now and before) and the validation you ran (`comms-technical-writing`).
 3. Run the narrowest sufficient validation from AGENTS.md, then the repo's pre-PR gate, before pushing.
 4. Open the PR ready for review unless a draft is requested.
 5. If `gh pr edit` fails on a GraphQL error, update the body with `gh api repos/<owner>/<repo>/pulls/<n> -X PATCH -f body=...`.

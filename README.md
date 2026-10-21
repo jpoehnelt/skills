@@ -45,6 +45,7 @@ These skills hold no project-specific commands, paths, or names. Each one lists 
 | [comms-interrogate](./comms-interrogate/SKILL.md) | Critique a diff with parallel reviewers and synthesize one verdict. |
 | [comms-technical-writing](./comms-technical-writing/SKILL.md) | Writing standard for docs, skills, PR descriptions, and commit messages. |
 | [comms-unslop](./comms-unslop/SKILL.md) | Remove machine-written patterns from prose. |
+| [comms-impact](./comms-impact/SKILL.md) | State a change's effect on users and the business: when someone does X, now Y, before Z. |
 
 ### Agents
 
