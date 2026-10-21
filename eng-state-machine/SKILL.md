@@ -17,12 +17,12 @@ Repo facts (from AGENTS.md or CLAUDE.md): the machine helper and where machines 
 - **Decide every (state, command) pair.** Each pair not listed as a move is either rejected or an explicit no-op. Repeating a command that already took effect (archive an archived entity) is usually a no-op so retries stay safe; anything else is a rejection. An unhandled pair is how illegal moves slip through.
 - **Modes live in the status, data lives beside it.** No boolean that restates the status (`isArchived` next to `status = 'archived'`). Per-state data is a union: a `cancelled` entity carries its `reason`, an `active` one does not.
 - **Derived statuses are never stored.** If a status follows from other fields (ready when every check passed, expired when `expires_at` is past), compute it on read. A stored copy is a second source of truth that drifts, and a stored "expired" needs a job that can fall behind.
-- **Encode current behavior.** When moving existing writes onto a machine, allow every move the code makes today, even odd ones. Tightening a move is a product change: make it in its own commit, or mark the permissive move with a `TODO` naming the open decision.
+- **Encode current behavior.** When moving existing writes onto a machine, allow every move the code makes today, even odd ones. Tightening a move is a product change. Make it in its own commit, or mark the permissive move with a `TODO` naming the open decision.
 - **Stored state names are a contract.** Renaming or removing a state needs a data migration for rows in the old state and a check of every consumer of its events.
 
 ## Decide purely
 
-`decide(current, command)` returns the accepted transition, a no-op, or a typed rejection. It is synchronous and has no I/O: time, actor, and any data a guard needs come in as arguments.
+`decide(current, command)` returns the accepted transition, a no-op, or a typed rejection. It is synchronous and does no I/O. Time, actor, and any data a guard needs come in as arguments.
 
 ```ts
 type Decision<S> =
@@ -31,13 +31,13 @@ type Decision<S> =
   | { kind: "rejected"; from: S; command: string; reason: string };
 ```
 
-The caller turns a rejection into the owning module's error at the write site. Because guards take their data as input, the same rule runs in tests, in previews ("can I archive this?"), and in the write. Time-based moves (expiry, timeouts) are commands too: a scheduler sends them with the current time, and `decide` checks the deadline. Effect repos: see the state machine section of `effect`.
+The caller turns a rejection into the owning module's error at the write site. Because guards take their data as input, the same rule runs in tests, in previews ("can I archive this?"), and in the write. Time-based moves (expiry, timeouts) are commands too. A scheduler sends them with the current time, and `decide` checks the deadline. In an Effect repo, `effect` shows how these parts map onto Effect.
 
 ## Write through one path
 
 1. Read the current state inside the transaction, with at most one row lock on the entity, or use a guarded update.
 2. Run `decide`. On `unchanged`, return without writing.
-3. Write the new state guarded on the decided `from` (`UPDATE ... SET status = :to WHERE id = :id AND status = :from`). Zero rows updated means a concurrent move won: retry from step 1 or return a conflict. Never write unguarded.
+3. Write the new state guarded on the decided `from` (`UPDATE ... SET status = :to WHERE id = :id AND status = :from`). Zero rows updated means a concurrent move won. Retry from step 1 or return a conflict. Never write unguarded.
 4. Record the transition (id, entity, from, to, actor, time) in the same transaction, as history or an outbox row.
 
 No other code sets the status field. Add a lint or grep check that flags writes to it outside the write helper, so a new writer fails CI instead of review.
@@ -71,5 +71,5 @@ No other code sets the status field. Add a lint or grep check that flags writes 
 - The write is guarded on `from` and records the transition in the same transaction.
 - No status write exists outside the helper, and a check enforces it.
 - Events come from the durable record; reactions deduplicate on the transition id and reread state.
-- The graph test passes: reachable states, no dead ends, terminal states closed.
+- The graph test passes: every state is reachable, every non-terminal state can reach a terminal one, and no terminal state has an outgoing move.
 - A refactor allows every move the old code made; tightening is a separate, named decision. A renamed state ships with a data migration.
