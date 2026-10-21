@@ -1,7 +1,6 @@
 ---
 name: agents-swarm
 description: Fan out N parallel subagent workers in one turn, aggregate their results, and report PASS, ISSUES, or BLOCKED per worker. Use for /agents-swarm, "swarm this", parallel coverage across slices, races between approaches, or broad exploration.
-disable-model-invocation: true
 ---
 
 # Swarm

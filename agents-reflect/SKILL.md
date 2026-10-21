@@ -1,7 +1,6 @@
 ---
 name: agents-reflect
 description: After a work session, review what went wrong and right and turn each lesson into a concrete edit to an existing skill or AGENTS.md line. Use when the user says "reflect" or /agents-reflect.
-disable-model-invocation: true
 ---
 
 # Reflect

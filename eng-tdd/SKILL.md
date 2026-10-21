@@ -1,7 +1,6 @@
 ---
 name: eng-tdd
 description: Fix a bug test-first when there is a clear, cheap regression test path. Use when the user asks for TDD, a failing test, or a regression test, or when the bug has an obvious cheap local test target.
-disable-model-invocation: true
 ---
 
 # TDD bug fix
