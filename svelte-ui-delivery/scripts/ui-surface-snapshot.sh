@@ -68,11 +68,11 @@ grep -E '/routes/' <<<"$files" | grep -iF "${kw[@]}" | head -60 || true
 
 section "Consumers (files referencing the keywords)"
 # Capture first so an rg failure exits 2 instead of vanishing in the pipeline.
-consumers=$(run_rg -li -F --glob '*.{svelte,ts,js}' "${kw[@]}" "${roots[@]}")
+consumers=$(run_rg -li -F --glob '*.{svelte,ts,tsx,mts,cts,js,jsx,mjs,cjs}' "${kw[@]}" "${roots[@]}")
 grep -vE '\.(test|spec|stories)\.' <<<"$consumers" | head -80 || true
 
 section "Stories and tests matching"
-grep -E '\.(stories|story|test|spec)\.(ts|js|svelte)$' <<<"$files" | grep -iF "${kw[@]}" | head -60 || true
+grep -E '\.(stories|story|test|spec)\.([cm]?[jt]sx?|svelte)$' <<<"$files" | grep -iF "${kw[@]}" | head -60 || true
 
 section "Theme tokens and fonts (global CSS)"
 css=$(grep -E '(^|/)(app|global|globals|theme|tokens)\.css$' <<<"$files" | head -5 || true)
