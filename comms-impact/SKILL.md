@@ -5,7 +5,7 @@ description: State what a change means for users and the business in plain words
 
 # Impact statements
 
-An impact statement tells a reader who never sees the code what changes for whom. It names a person, an action, the new result, and the old result. Commit messages and file names are not inputs; the observed behavior is.
+An impact statement tells a reader who never sees the code what changes for whom. It names a person, an action, the new result, and the old result. Work from the observed behavior, since commit messages and file names describe how the author worked.
 
 Repo facts (from AGENTS.md): where impact statements go (PR template section, change notes, changesets, release notes), the product's names for its users and screens, who reads each surface (customers, operators, support, developers), and where usage or support numbers come from, if anywhere.
 
@@ -17,7 +17,7 @@ Repo facts (from AGENTS.md): where impact statements go (PR template section, ch
    - **Does what**: the action or condition that triggers it, specific enough to reproduce.
    - **Now**: what they see or get after the change.
    - **Before**: what they saw or got on the base branch. Check it there by running it, reading the old code path, or reading the test the change edits. Do not infer it from the PR title.
-3. If you cannot establish the old result, write "Before: not verified" rather than guessing.
+3. If you cannot establish the old result, write "Before: not verified".
 
 ## Write it
 
@@ -30,7 +30,7 @@ Use one statement per behavior:
 - Keep code out of the user sentence: no function names, flags, tables, or file paths. A developer-facing API statement may name the endpoint and field, since that is what its reader sees.
 - Drop empty verbs: "improved", "enhanced", "better", "fixed an issue with". Say what is different.
 - Use the past tense for before and the present for now.
-- Several statements read best as a table:
+- Put several statements in a table:
 
 | Who | Does | Now | Before |
 | --- | --- | --- | --- |
@@ -43,9 +43,9 @@ Add one line on why it matters only when you can support it: who and how many it
 ## Special cases
 
 - **Required action.** If the reader must do something (re-authenticate, migrate a setting, update a client), put a "What you need to do" line first, with the exact step.
-- **Nothing visible changes.** Say "No user-visible change", then one clause on what it enables or prevents ("so the next release can add exports"). Do not dress internal work up as a feature.
-- **Risk instead of behavior.** For fixes to something that had not yet hurt anyone, state the failure it prevents: "When two admins approve the same request at once, only one approval is recorded. Before, both were recorded and the request was charged twice."
-- **Several audiences.** Write one statement per audience rather than one that serves none: customers get the screen-level effect, operators get the alert or runbook effect, API clients get the field-level effect.
+- **Nothing visible changes.** Say "No user-visible change", then one clause on what it enables or prevents ("so the next release can add exports"). Do not describe internal work as a feature.
+- **Prevented failures.** For a fix to a failure no one has hit yet, state the failure it prevents: "When two admins approve the same request at once, only one approval is recorded. Before, both were recorded and the request was charged twice."
+- **Several audiences.** Write one statement per audience. Customers get the screen-level effect, operators get the alert or runbook effect, API clients get the field-level effect.
 - **Order.** Required actions first, then by how many people a change reaches.
 
 ## Review checklist
