@@ -59,6 +59,16 @@ const load = Effect.fn("loadOrder")(function* (id: string) {
 - Inside programs read time and randomness through `Clock` and `Random`, never `Date.now()`, `new Date()`, `Math.random()`, or ambient `crypto.randomUUID()`. In durable workflows, read time through the workflow's journaled step before branching.
 - Brand entity IDs at ingress with `Schema.brand` (or `Brand.nominal` outside schemas). Use `Data.Class` for in-memory equality; keep wire and journal values plain JSON.
 
+## State machines
+
+Effect v4 has no state-machine module. Follow `eng-state-machine` for the design; this is how its parts map to Effect.
+
+- `decide` is plain TypeScript with no `Effect`, `Clock`, or service. Use `Match.valueTags` or `Match.exhaustive` over a `Schema.TaggedUnion` of commands so a missing (state, command) pair is a type error.
+- Decode the stored status at the boundary with `Schema.Literals([...states])`, so an unknown value never reaches `decide`.
+- `decide` returns a rejection as data. The write turns it into the owning package's tagged error; do not make `decide` fail in the error channel.
+- The write is one `Effect.fn` inside the repo's transaction: lock or read, `decide`, guarded update, outbox row. Read time and ids from `Clock` and the id service and pass them to `decide`. A guarded update that misses fails with a conflict tag the caller retries (`Effect.retry({ while: (e) => e._tag === "...Conflict", times })`); a miss under a row lock is a defect.
+- An in-memory machine (session, connection, worker) serializes moves with `SynchronizedRef.modifyEffect` and publishes states with `SubscriptionRef.changes`. Multi-step processes that wait on time or events belong in the repo's workflow engine, not in an entity machine.
+
 ## IO
 
 - Trace service boundaries with `Effect.fn("operationName")(function* () {...})`; add dynamic attributes with `Effect.annotateCurrentSpan`. Private helpers stay untraced.
