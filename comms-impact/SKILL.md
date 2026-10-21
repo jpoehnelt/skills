@@ -38,7 +38,7 @@ Use one statement per behavior:
 
 ## Business impact
 
-Add one line on why it matters only when you can support it: who and how many it reaches, support load, revenue, risk, or a commitment it meets. Cite the source (a dashboard, a ticket count, an incident, the request that asked for it). With no source, name the affected group and stop. Never invent a number or a percentage.
+Add one line on why it matters only when you can support it: who and how many it reaches, support load, revenue, risk, or a commitment it meets. Cite the source (a dashboard, a ticket count, an incident, the request that asked for it) where only the team reads it, such as the PR body. A public note (release notes, a published changelog) keeps the claim and leaves out internal links, ticket numbers, and tool names. With no source, name the affected group and stop. Never invent a number or a percentage.
 
 ## Special cases
 
@@ -53,6 +53,6 @@ Add one line on why it matters only when you can support it: who and how many it
 - Every statement names who, the action, now, and before, or says before was not verified.
 - A reader outside the team could reproduce the "when" part.
 - No code names in user-facing sentences; no empty verbs; numbers have units.
-- Each business-impact claim cites a source or is cut.
+- Each business-impact claim cites a source or is cut, and public notes carry no internal links or identifiers.
 - Internal-only changes say so instead of claiming a benefit.
 - Prose follows `comms-technical-writing` and passes `comms-unslop`.
