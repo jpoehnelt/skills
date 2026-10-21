@@ -11,7 +11,7 @@ Repo facts (from AGENTS.md or the app's AGENTS.md): where shared primitives and 
 
 - Run `scripts/ui-surface-snapshot.sh [--root DIR]... KEYWORD...` to list matching components, shared primitive folders, routes, consumers, stories and tests, and global CSS tokens.
 - Reuse before creating. Generic primitives go in the repo's shared UI package or `components/ui/`; feature components go in `components/<feature>/` (PascalCase). No loose top-level components and no new barrel files.
-- Add shadcn-svelte primitives with its CLI (`pnpm dlx shadcn-svelte@latest add <name>`) rather than hand-writing them.
+- Add shadcn-svelte primitives with its CLI (`pnpm dlx shadcn-svelte@latest add <name>`) rather than hand-writing them. `svelte-shadcn` covers writing, customizing, and re-syncing them.
 - Icons: import single files (for example `@lucide/svelte/icons/<name>`), not the whole set.
 
 ## Decide the experience
