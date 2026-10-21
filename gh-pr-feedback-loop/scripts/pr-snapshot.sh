@@ -15,6 +15,7 @@ if [[ "$pr" =~ github\.com[/:]([^/]+/[^/]+)/pull/([0-9]+) ]]; then
 fi
 num="${pr##*/}"
 limit="${GH_TIMEOUT:-60}"
+[[ "$limit" =~ ^[1-9][0-9]*$ ]] || { echo "pr-snapshot: GH_TIMEOUT must be a positive number of seconds" >&2; exit 2; }
 
 command -v gh >/dev/null || { echo "pr-snapshot: gh is required" >&2; exit 2; }
 
@@ -28,11 +29,14 @@ else
   repo="$(printf '%s' "$url" | sed -E 's#/+$##; s#\.git$##' | awk -F'[/:]' '{print $(NF-1) "/" $NF}')"
 fi
 
-# Deadline every call: timeout(1), gtimeout (macOS coreutils), or a perl alarm; never unbounded.
-if command -v timeout >/dev/null; then limit_cmd=(timeout "$limit")
-elif command -v gtimeout >/dev/null; then limit_cmd=(gtimeout "$limit")
-elif command -v perl >/dev/null; then limit_cmd=(perl -e 'alarm shift; exec @ARGV or die "exec: $!\n"' "$limit")
-else echo "$(basename "$0"): need timeout, gtimeout, or perl to bound external calls" >&2; exit 2; fi
+# Deadline every call, never unbounded. Prefer perl: it signals the command's process group (TERM at
+# the deadline, KILL after a 10s grace while any member still runs) and forwards INT, TERM, and HUP
+# the same way. timeout(1) or gtimeout (macOS coreutils) is the fallback; its -k KILL reaches the
+# group only while the direct child still runs.
+if command -v perl >/dev/null; then limit_cmd=(perl -e '$t = shift; defined(my $pid = fork) or die "fork: $!\n"; if (!$pid) { setpgrp(0, 0); exec @ARGV or die "exec: $!\n" } my $stop = sub { kill $_[0] => -$pid; for (1 .. 10) { waitpid($pid, 1); last unless kill 0 => -$pid; sleep 1 } kill KILL => -$pid; waitpid $pid, 0; exit $_[1] }; for my $s (qw(INT TERM HUP)) { $SIG{$s} = sub { $stop->($s, 128 + { INT => 2, TERM => 15, HUP => 1 }->{$s}) } } $SIG{ALRM} = sub { $stop->(TERM => 124) }; alarm $t; waitpid $pid, 0; exit($? & 127 ? 128 + ($? & 127) : $? >> 8)' "$limit")
+elif command -v timeout >/dev/null; then limit_cmd=(timeout -k 10 "$limit")
+elif command -v gtimeout >/dev/null; then limit_cmd=(gtimeout -k 10 "$limit")
+else echo "$(basename "$0"): need perl, timeout, or gtimeout to bound external calls" >&2; exit 2; fi
 api() { "${limit_cmd[@]}" gh api "$@"; }
 # A failed section is reported and the rest still prints; the exit status stays non-zero.
 failed=0
@@ -52,9 +56,10 @@ echo '--- commit statuses (state, context, url) ---'
 section api "repos/$repo/commits/$head_sha/status?per_page=100" --paginate \
   --jq '.statuses[] | [.state, .context, (.target_url // "-")] | @tsv'
 
-echo '--- reviews (state, author, commit) ---'
+echo '--- reviews (id, state, author, commit, first line of body) ---'
 section api "repos/$repo/pulls/$num/reviews?per_page=100" --paginate \
-  --jq '.[] | [.state, .user.login, .commit_id[0:8]] | @tsv'
+  --jq '.[] | [.id, .state, .user.login, .commit_id[0:8],
+    ((.body // "") | split("\n") | map(select(test("\\S") and (startswith("<!--") | not))) | (.[0] // "-") | .[0:160])] | @tsv'
 
 # REST comments carry no resolved state; review threads (GraphQL) do. Some hosts
 # block GraphQL, so report that instead of implying there are no open threads.

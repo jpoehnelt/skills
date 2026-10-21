@@ -38,7 +38,7 @@ Synthesize the findings yourself, or use one synthesizer subagent on the stronge
 
 Find where it belongs. Run `ls .agents/skills` and read `AGENTS.md` and its skills table, if one exists. Follow any placement rule AGENTS.md states.
 
-- A procedure or design check in an existing skill's area: edit that `.agents/skills/<name>/SKILL.md`, usually its review checklist. Keep it within 80 lines, cutting text to make room.
+- A procedure or design check in an existing skill's area: edit that `.agents/skills/<name>/SKILL.md`, usually its review checklist. Keep it within 80 lines, cutting text to make room. If the repo vendors that skill from a shared source, propose the change upstream instead of editing the copy.
 - A durable invariant, not a procedure: edit one line of `AGENTS.md`.
 - Principles, decision records, and plans go where AGENTS.md says they live, not into a new docs file.
 - No skill fits and the lesson will recur: propose a new skill folder and add it to the skills table.
@@ -48,7 +48,7 @@ Never add a duplicate of an existing rule.
 
 ## 4. Apply
 
-Present the Accepted, Rejected, and Backlog lists in chat. Apply only the subset the user authorized; an explicit request to incorporate lessons already supplies authorization. Ask when an edit expands the requested scope. Skill edits affect every future agent, so never apply unrequested edits. Make exact diffs and follow the session's delivery instructions. Do not commit unless asked.
+Present the Accepted, Rejected, and Backlog lists in chat. Apply only the subset the user authorized; an explicit request to incorporate lessons already supplies authorization. Ask when an edit expands the requested scope. Skill edits affect every future agent, so never apply unrequested edits. Make exact diffs, then commit, push, or leave the changes as the repo's or session's delivery rules require.
 
 ## 5. Summarize
 

@@ -5,13 +5,13 @@ description: Decode untrusted data once at ingress with Effect Schema (v4) and p
 
 # Boundary validation
 
-Decode untrusted data once, at the ingress, then pass the decoded type downstream. TypeScript types, `satisfies`, and `as` casts are not runtime validation. Assumes Effect v4 `Schema` (`import * as Schema from "effect/Schema"`); see `effect` for errors and runners.
+Decode untrusted data once, at the ingress, then pass the decoded type downstream. TypeScript types, `satisfies`, and `as` casts are not runtime validation. Assumes Effect v4 `Schema`, imported the way the repo's import policy says (the `effect` root or `effect/Schema`); see `effect` for errors and runners.
 
 Repo facts (from AGENTS.md): where shared wire schemas live, retired schema libraries, safe-decode helpers, ast-grep boundary rules, the public error shape, and check and test commands.
 
 ## Inventory the boundary
 
-Run `scripts/boundary-audit.sh [--ban MODULE]... [--rule RULE_ID]... [paths]` on the changed paths. It lists parse and cast sites, signature checks, and decode sites, fails on imports of any `--ban` module (for example `--ban zod --ban valibot`), and runs the named ast-grep rules when the repo has `sgconfig.yml`. For each change, name:
+Run `scripts/boundary-audit.sh [--ban MODULE]... [--rule RULE_ID]... [paths]` on the changed paths. It lists parse and cast sites, signature checks, and decode sites, fails on imports of any `--ban` module (for example `--ban zod --ban valibot`; a text search, so enforce a ban structurally with an ast-grep rule), and runs the named ast-grep rules when the repo has `sgconfig.yml`. For each change, name:
 
 1. The ingress point (route, webhook, message or topic handler, RPC method, upstream response, env read, stored row).
 2. The owning schema: shared wire schemas live in the contract package when several packages consume them; local-only shapes stay beside their consumer.

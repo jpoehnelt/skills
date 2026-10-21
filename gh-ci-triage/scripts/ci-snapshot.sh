@@ -29,6 +29,7 @@ if [[ "$pr" =~ github\.com[/:]([^/]+/[^/]+)/pull/([0-9]+) ]]; then
 fi
 pr="${pr##*/}"
 limit="${GH_TIMEOUT:-60}"
+[[ "$limit" =~ ^[1-9][0-9]*$ ]] || { echo "ci-snapshot: GH_TIMEOUT must be a positive number of seconds" >&2; exit 2; }
 
 command -v gh >/dev/null || { echo "ci-snapshot: gh is required" >&2; exit 2; }
 
@@ -55,11 +56,14 @@ default_branch() {
   fi
 }
 
-# Deadline every call: timeout(1), gtimeout (macOS coreutils), or a perl alarm; never unbounded.
-if command -v timeout >/dev/null; then limit_cmd=(timeout "$limit")
-elif command -v gtimeout >/dev/null; then limit_cmd=(gtimeout "$limit")
-elif command -v perl >/dev/null; then limit_cmd=(perl -e 'alarm shift; exec @ARGV or die "exec: $!\n"' "$limit")
-else echo "$(basename "$0"): need timeout, gtimeout, or perl to bound external calls" >&2; exit 2; fi
+# Deadline every call, never unbounded. Prefer perl: it signals the command's process group (TERM at
+# the deadline, KILL after a 10s grace while any member still runs) and forwards INT, TERM, and HUP
+# the same way. timeout(1) or gtimeout (macOS coreutils) is the fallback; its -k KILL reaches the
+# group only while the direct child still runs.
+if command -v perl >/dev/null; then limit_cmd=(perl -e '$t = shift; defined(my $pid = fork) or die "fork: $!\n"; if (!$pid) { setpgrp(0, 0); exec @ARGV or die "exec: $!\n" } my $stop = sub { kill $_[0] => -$pid; for (1 .. 10) { waitpid($pid, 1); last unless kill 0 => -$pid; sleep 1 } kill KILL => -$pid; waitpid $pid, 0; exit $_[1] }; for my $s (qw(INT TERM HUP)) { $SIG{$s} = sub { $stop->($s, 128 + { INT => 2, TERM => 15, HUP => 1 }->{$s}) } } $SIG{ALRM} = sub { $stop->(TERM => 124) }; alarm $t; waitpid $pid, 0; exit($? & 127 ? 128 + ($? & 127) : $? >> 8)' "$limit")
+elif command -v timeout >/dev/null; then limit_cmd=(timeout -k 10 "$limit")
+elif command -v gtimeout >/dev/null; then limit_cmd=(gtimeout -k 10 "$limit")
+else echo "$(basename "$0"): need perl, timeout, or gtimeout to bound external calls" >&2; exit 2; fi
 api() { "${limit_cmd[@]}" gh api "$@"; }
 # A failed section is reported and the rest still prints; the exit status stays non-zero.
 failed=0
@@ -91,13 +95,14 @@ else
 fi
 
 if [[ -n "$workflow" ]]; then
-  path="repos/$repo/actions/workflows/$workflow/runs?branch=$base&per_page=10"
+  path="repos/$repo/actions/workflows/$workflow/runs"
 else
-  path="repos/$repo/actions/runs?branch=$base&per_page=10"
+  path="repos/$repo/actions/runs"
 fi
 echo
 echo "Recent runs on $base${workflow:+ for $workflow} (id, workflow, status, conclusion, sha, url)"
-section api "$path" \
+# Pass the branch as a field so gh encodes it: a ref name may contain &, #, or %.
+section api "$path" -X GET -f branch="$base" -F per_page=10 \
   --jq '.workflow_runs[] | [.id, .name, .status, (.conclusion // "-"), .head_sha[0:8], .html_url] | @tsv'
 
 exit "$failed"

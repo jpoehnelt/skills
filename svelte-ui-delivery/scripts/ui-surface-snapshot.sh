@@ -36,16 +36,20 @@ kw=()
 for k in "${keywords[@]}"; do kw+=(-e "$k"); done
 excludes=(--glob '!**/node_modules/**' --glob '!**/dist/**' --glob '!**/build/**'
   --glob '!**/.svelte-kit/**' --glob '!**/storybook-static/**')
-# Deadline every call: timeout(1), gtimeout (macOS coreutils), or a perl alarm; never unbounded.
-if command -v timeout >/dev/null; then limit=(timeout 60)
-elif command -v gtimeout >/dev/null; then limit=(gtimeout 60)
-elif command -v perl >/dev/null; then limit=(perl -e 'alarm shift; exec @ARGV or die "exec: $!\n"' 60)
-else echo "$(basename "$0"): need timeout, gtimeout, or perl to bound external calls" >&2; exit 2; fi
+# Deadline every call, never unbounded. Prefer perl: it signals the command's process group (TERM at
+# the deadline, KILL after a 10s grace while any member still runs) and forwards INT, TERM, and HUP
+# the same way. timeout(1) or gtimeout (macOS coreutils) is the fallback; its -k KILL reaches the
+# group only while the direct child still runs.
+if command -v perl >/dev/null; then limit=(perl -e '$t = shift; defined(my $pid = fork) or die "fork: $!\n"; if (!$pid) { setpgrp(0, 0); exec @ARGV or die "exec: $!\n" } my $stop = sub { kill $_[0] => -$pid; for (1 .. 10) { waitpid($pid, 1); last unless kill 0 => -$pid; sleep 1 } kill KILL => -$pid; waitpid $pid, 0; exit $_[1] }; for my $s (qw(INT TERM HUP)) { $SIG{$s} = sub { $stop->($s, 128 + { INT => 2, TERM => 15, HUP => 1 }->{$s}) } } $SIG{ALRM} = sub { $stop->(TERM => 124) }; alarm $t; waitpid $pid, 0; exit($? & 127 ? 128 + ($? & 127) : $? >> 8)' 60)
+elif command -v timeout >/dev/null; then limit=(timeout -k 10 60)
+elif command -v gtimeout >/dev/null; then limit=(gtimeout -k 10 60)
+else echo "$(basename "$0"): need perl, timeout, or gtimeout to bound external calls" >&2; exit 2; fi
 
 # rg exit: 0 = matches, 1 = none, >1 = error (fatal).
 run_rg() {
   local status=0
-  "${limit[@]}" rg "${excludes[@]}" "$@" || status=$?
+  # --hidden so checked-in dotfolders such as .storybook are searched; .git never is.
+  "${limit[@]}" rg --hidden --glob '!**/.git/**' "${excludes[@]}" "$@" || status=$?
   if ((status > 1)); then echo "ui-surface-snapshot: rg failed or timed out (exit $status)" >&2; exit 2; fi
   return 0
 }
@@ -64,11 +68,11 @@ grep -E '/routes/' <<<"$files" | grep -iF "${kw[@]}" | head -60 || true
 
 section "Consumers (files referencing the keywords)"
 # Capture first so an rg failure exits 2 instead of vanishing in the pipeline.
-consumers=$(run_rg -li -F --glob '*.{svelte,ts,js}' "${kw[@]}" "${roots[@]}")
+consumers=$(run_rg -li -F --glob '*.{svelte,ts,tsx,mts,cts,js,jsx,mjs,cjs}' "${kw[@]}" "${roots[@]}")
 grep -vE '\.(test|spec|stories)\.' <<<"$consumers" | head -80 || true
 
 section "Stories and tests matching"
-grep -E '\.(stories|story|test|spec)\.(ts|js|svelte)$' <<<"$files" | grep -iF "${kw[@]}" | head -60 || true
+grep -E '\.(stories|story|test|spec)\.([cm]?[jt]sx?|svelte)$' <<<"$files" | grep -iF "${kw[@]}" | head -60 || true
 
 section "Theme tokens and fonts (global CSS)"
 css=$(grep -E '(^|/)(app|global|globals|theme|tokens)\.css$' <<<"$files" | head -5 || true)

@@ -12,7 +12,7 @@ Repo facts (from AGENTS.md or CLAUDE.md): the main CI workflow file and its jobs
 ## Snapshot the current head
 
 1. Run [`scripts/ci-snapshot.sh`](scripts/ci-snapshot.sh) `[-R owner/repo] [-w workflow] <pr-number>`. It prints the PR head, check runs and commit statuses on that head, workflow runs for that head, and recent runs on the base branch. With no PR it shows recent runs on the default branch.
-2. Read the first failing step's log (`gh run view <run-id> --log-failed`), not the job title. Later skipped steps are not independent failures. Save long logs to a scratch file and read the relevant excerpt.
+2. Read the first failing step's log (`gh run view <run-id> --log-failed`, adding `-R owner/repo` when the snapshot used it), not the job title. Later skipped steps are not independent failures. Save long logs to a scratch file and read the relevant excerpt.
 3. Compare with the base branch: is the same job or step red there? Pass `-w <workflow-file>` to narrow the comparison.
 4. Check the workflow definition when the job map in AGENTS.md may have drifted. An aggregate job (for example a `ci-success` gate) fails because a lane failed or was cancelled; find that lane.
 
@@ -22,7 +22,7 @@ Assign exactly one class and cite the log line or run URL that proves it.
 
 - **real**: a specific assertion, type, lint, build, or code-generation failure, including merge conflicts with the base. Reproduce with the narrowest local command that mirrors the CI job (same filter and flags), fix, push.
 - **base-red**: the same step is red on the latest base-branch run. Cite that run. Port an existing fix if one exists; otherwise comment once on the PR naming the step and the failing base run. Do not expand an unrelated PR to fix it unless asked.
-- **flake**: a known transient (network fetch, runner loss, browser or package download). Rerun the failed jobs once (`gh run rerun <run-id> --failed`); a second failure is real.
+- **flake**: a known transient (network fetch, runner loss, browser or package download). Rerun the failed jobs once (`gh run rerun <run-id> --failed`, with the same `-R`); a second failure is real.
 - **infra-not-published**: a baseline or artifact the job compares against has not been published for the base SHA yet. Merge the base forward to a commit that has it; do not rerun. If the comparison was skipped for missing credentials, it is human-only.
 - **cancelled**: superseded by a newer push (PR concurrency cancels older runs). Inspect the newest head.
 - **human-only**: missing secrets (common on fork PRs), rotated tokens, screenshot or deploy approval, hardware. Report the exact blocker.
