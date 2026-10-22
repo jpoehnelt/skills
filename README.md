@@ -74,6 +74,7 @@ These skills hold no project-specific commands, paths, or names. Each one lists 
 | [svelte-ui-delivery](./svelte-ui-delivery/SKILL.md) | Build and verify Svelte 5 UI changes with rendered evidence. |
 | [svelte-shadcn](./svelte-shadcn/SKILL.md) | Write and customize shadcn-svelte components: Bits UI, tailwind-variants, and Tailwind v4 tokens. |
 | [alchemy-infra](./alchemy-infra/SKILL.md) | Change, deploy, and debug Alchemy v2 stacks and Infisical secrets. |
+| [nix-darwin](./nix-darwin/SKILL.md) | Manage macOS defaults, Homebrew casks, Lix or Nix settings, and Home Manager with a nix-darwin flake. |
 | [sentry-bugfix](./sentry-bugfix/SKILL.md) | Triage Sentry errors for an environment and deliver a fix PR. |
 | [sentry-perf](./sentry-perf/SKILL.md) | Find and fix performance regressions from Sentry spans and web vitals. |
 
