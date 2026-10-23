@@ -42,6 +42,7 @@ Run `scripts/boundary-audit.sh [--ban MODULE]... [--rule RULE_ID]... [paths]` on
 - Apply `Schema.Trim` before length or format checks on user text. Brand IDs at ingress with `Schema.brand`.
 - LLM structured output: pass the Effect Schema to the provider so it derives JSON Schema; prefer `Schema.Finite` over `Schema.Number`, which admits `"Infinity"`/`"NaN"` strings.
 - Database driver generics (`run<T>`, `query<T>`) are casts. Decode projection rows that are JSON or loosely typed.
+- Narrowing a persisted literal union makes old rows undecodable. Never decode stored rows against a narrowed schema under `orDie` (or any defect conversion) unless the query filters to the same set; one leftover row otherwise kills the whole read.
 - Error envelopes (RPC failures, stored errors) decode with an explicit envelope schema, never by matching message text.
 - Return a generic public error; never echo raw input, tokens, secrets, or internal causes into responses or logs.
 - Do not re-validate downstream; transform the decoded value explicitly.

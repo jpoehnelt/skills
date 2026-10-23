@@ -42,6 +42,7 @@ Repo search alone never proves live state. A removed reference says nothing abou
 4. Scope retired-name searches to active source, config, and workflows. Changelogs, changesets, and migration history may legitimately keep old names.
 5. Preserve implicit behavior across runtime or storage moves (`eng-change-checklist`). Confirm dependent stacked PRs before declaring a symbol unused.
 6. Verify live usage and blast radius (`eng-blast-radius`) before removing persistence or provider dependencies. Include deploy provisioning and seed generators in retired-store audits, and check the real migrate-then-seed sequence against isolated, non-production stores.
+7. Before retiring a persisted enum, status, or type value, count the rows that hold it, or ship a migration that clears them, and record which in the PR. If rows may remain, list every reader of that column (decoders, filters, counts, projections, vector or index attributes) and filter at one shared choke point, not per call site.
 
 ## Retired stores and deploy resources
 
@@ -60,4 +61,5 @@ Keep historical schema migrations, and keep a rollback release compatible with t
 - Every replacement has a `--required` assertion and a test.
 - Test harness layers match the production driver on type parsing and error causes.
 - Live state was checked, not only the repository.
+- A retired persisted value has a row count or clearing migration on record, or one shared filter for its readers.
 - Merged main was re-audited, not just the branch; a rebased series was compared with `git range-diff`.

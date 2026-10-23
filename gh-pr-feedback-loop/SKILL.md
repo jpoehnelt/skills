@@ -36,6 +36,9 @@ Each iteration:
 5. If a workflow pushes bot commits to the branch (formatting, image optimization), `git pull --rebase` before the next push.
 6. Re-read threads before replying so you do not answer twice. Reply on each addressed thread, and resolve only threads you were asked to own. A reply alone does not resolve a finding.
 7. Keep the PR body and linked issue scope accurate after the scope changes.
+8. Every push resets approvals bound to a SHA (visual baselines, reviews). Batch fixes into one push per review round, and finish copy and PR body edits before pushing.
+9. After a squash merge, start follow-up work on a fresh branch from the base (`git switch -c <new> origin/<base>`); the old branch's commits are not ancestors of it.
+10. If a thread reply fails with "one pending review per pull request", submit or delete the pending review. Do not fall back to a top-level comment.
 
 ## Clean head
 
