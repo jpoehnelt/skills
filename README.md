@@ -47,6 +47,7 @@ These skills hold no project-specific commands, paths, or names. Each one lists 
 | [comms-technical-writing](./comms-technical-writing/SKILL.md) | Writing standard for docs, skills, PR descriptions, and commit messages. |
 | [comms-unslop](./comms-unslop/SKILL.md) | Remove machine-written patterns from prose. |
 | [comms-impact](./comms-impact/SKILL.md) | State a change's effect on users and the business: when someone does X, now Y, before Z. |
+| [comms-slides](./comms-slides/SKILL.md) | Replace quotable one-liners in slides and speaker notes with plain claims, and keep order and cross-references consistent. |
 
 ### Agents
 
