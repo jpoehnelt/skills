@@ -5,9 +5,9 @@ description: Decide whether a change needs a test, where it lives, what it asser
 
 # Testing
 
-A test earns its place by catching a regression a reviewer would miss. Most changes are proven by types, lint, rendering the component, or running the app; a new test is the exception.
+Add a test when it would catch a regression a reviewer would miss. Types, lint, a rendered component, or a run of the app prove most changes without one.
 
-Repo facts (from AGENTS.md or CLAUDE.md): the test policy (when a test is required, allowed, or discouraged), the runner and file pattern per package, shared test helpers and in-memory fakes, the lint rules that enforce test hygiene, the story or visual-test limits, which CI stage runs which tests, and the check commands from one file up to the pre-PR suite. The repo's policy wins over this skill. Before writing a test, search the installed skills for one that covers testing in the framework or runtime the code uses, and follow its helpers and patterns alongside this one.
+Repo facts (from AGENTS.md): the test policy (when a test is required, allowed, or discouraged), the runner and file pattern per package, shared test helpers and in-memory fakes, the lint rules that enforce test hygiene, the story or visual-test limits, which CI stage runs which tests, and the check commands from one file up to the pre-PR suite. The repo's policy wins over this skill. Before writing a test, search the installed skills for one that covers testing in the framework or runtime the code uses, and follow its helpers and patterns alongside this one.
 
 ## Decide whether to write one
 
@@ -32,7 +32,7 @@ Repo facts (from AGENTS.md or CLAUDE.md): the test policy (when a test is requir
 
 - Provide dependencies as in-memory fakes that behave like the real ones, not hand-built mocks of client calls.
 - Control time and randomness through an injected clock and random source, not by stubbing globals.
-- Test failure paths, retries, cancellation, and cleanup where their behavior is uncertain; do not test the framework's plumbing.
+- Test failure paths, retries, cancellation, and cleanup where their behavior is uncertain; do not test the framework's own behavior.
 
 ## Stories and end-to-end tests
 
@@ -41,13 +41,12 @@ Repo facts (from AGENTS.md or CLAUDE.md): the test policy (when a test is requir
 
 ## Run the smallest check
 
-Run one file, then the changed packages, then the repo's pre-PR suite. Use the repo's task runner rather than a bare test binary when it builds dependencies or generated types first. Know which tests the PR's CI skips, and say in the PR which checks ran.
+Run one file, then the changed packages, then the repo's pre-PR suite. Use the repo's task runner rather than a bare test binary when it builds dependencies or generated types first. Know which tests the PR's CI skips.
 
 ## Review checklist
 
 - Each new test covers an uncertain branch or a past bug; otherwise it is deleted or the code is simplified.
-- Tests sit beside the code, in the module that owns it, and moved with it.
+- Tests sit beside the code, in the module that owns it, and move with it.
 - Every assertion names a value or contract; none is vacuous, styling-based, focused, or skipped.
 - Time, randomness, and services come from fakes and an injected clock.
 - Story count stays bounded.
-- The PR names the checks that ran.
