@@ -32,6 +32,7 @@ These skills hold no project-specific commands, paths, or names. Each one lists 
 | [eng-blast-radius](./eng-blast-radius/SKILL.md) | Find what a change could break beyond its diff and prove the one fact it is safe because of. |
 | [eng-benchmark-checklist](./eng-benchmark-checklist/SKILL.md) | Vet a performance measurement before reporting a speedup or regression. |
 | [eng-tdd](./eng-tdd/SKILL.md) | Fix a bug test-first when a cheap regression test exists. |
+| [eng-testing](./eng-testing/SKILL.md) | Decide whether to test, where a test lives, what it asserts, and which check to run. |
 | [eng-cutover-verification](./eng-cutover-verification/SKILL.md) | Prove a migration, library swap, or removal is complete, with an audit script. |
 | [eng-state-machine](./eng-state-machine/SKILL.md) | Model an entity lifecycle as a state machine with a pure decide, one guarded write, and outbox events. |
 | [eng-agent-dx-cli-scale](./eng-agent-dx-cli-scale/SKILL.md) | Score how well a CLI is designed for AI agents. |
