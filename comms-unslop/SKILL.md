@@ -1,6 +1,6 @@
 ---
 name: comms-unslop
-description: Cut machine-written patterns from prose while keeping meaning and voice, or flag them without rewriting. Use when drafting or editing prose, docs, PR descriptions, commit messages, or replies that read machine-written.
+description: Cut machine-written patterns from prose and UI chrome while keeping meaning and voice, or flag them without rewriting. Use when drafting or editing prose, docs, PR descriptions, commit messages, replies, or UI surfaces that read machine-generated.
 ---
 
 # Unslop
@@ -55,9 +55,17 @@ For detection-only requests, quote each pattern and suggest a fix. Do not rewrit
 - **Mannered prose.** Aphorisms, rhetorical fragments, personified code, figurative verbs. Say the literal thing.
 - **Over-compression.** Dropped articles, verbless fragments, arrows, and abbreviations make the reader decode. Write whole sentences.
 
+## UI chrome
+
+- **Decorative pills and eyebrow badges.** Category pills above headings, version or status badges that carry no live state, and non-interactive tag chips. Delete them.
+- **Ornamental backgrounds.** Radial hero glows, decorative grid or dot-matrix backgrounds, and two-tone or gradient heading text. Use a flat surface and one text color.
+- **Card-in-card wrappers.** Multi-band cards (header bar, body, muted footer bar) around content that already sits in a section, or a card per paragraph. Use whitespace and hairlines instead.
+- **Unrequested chrome.** Filter bars, search boxes, sort toggles, count badges, and decorative icons on every alert or heading that the task did not ask for. Cut them.
+
 ## Verify
 
 - No em dashes, emojis, curly quotes, or title case headings remain.
 - No word from the AI vocabulary or metaphor noun lists remains.
 - Every sentence states a fact, instruction, or number.
+- In UI surfaces, no decorative pills, eyebrow badges, hero glows, background grids, or unrequested filter bars remain.
 - Meaning, technical accuracy, and the author's stated uncertainty are unchanged.
