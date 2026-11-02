@@ -17,7 +17,7 @@ Repo facts (from AGENTS.md or the app's AGENTS.md): where shared primitives and 
 ## Decide the experience
 
 - Inspect the existing surface: a supplied screenshot, a focused story, or the running app. State the user's task, how often they do it, and the friction the change removes.
-- Choose the smallest presentation that serves the task. Prefer contextual help or onboarding over persistent copy in navigation or repeated controls; keep instructions needed to complete an action visible.
+- Choose the smallest presentation that serves the task. Prefer contextual help or onboarding over persistent copy in navigation or repeated controls; keep instructions needed to complete an action visible. Do not add decorative eyebrow badges, status pills, hero glows, background grids, card-in-card wrappers, or unrequested filter bars.
 - Preserve hierarchy, density, and scan order. Check wrapping, scrolling, and competing emphasis with representative content at phone and laptop widths. A copy change can still change the layout.
 - Contextual help works by pointer, keyboard, and touch, exposes its description to assistive technology, and dismisses without moving focus. Verify touch separately: hover and focus do not prove touch users can open help without triggering another action.
 - A persistent notice or banner needs a defined audience, an observable rendering condition, a supported user action, and a permanent invariant or a named owner and removal condition. Non-actionable migration detail belongs in release notes.
@@ -54,7 +54,7 @@ Component tests assert behavior, contracts, and ARIA semantics, never CSS classe
 - Isolated component change: a focused Storybook story is enough. Run the app when routing, loaders, persistence, or cross-component interaction need verification; do not start the full stack for every edit.
 - Use the repo's local dev command and its printed URL. Check the changed route in light and dark mode, at phone and desktop widths, by keyboard only, and with reduced motion on.
 - For layout changes, compare before and after at the same viewport, and explain why each added persistent element earns its space. Technical checks alone do not establish a usable design.
-- Capture screenshots for the PR. For build-only issues (prerender, images, feeds), build and preview.
+- Capture screenshots for the PR. After a cross-cutting CSS or layout pass, re-run every screenshot target referenced by the walkthrough or PR and inspect the updated images so stale screenshots never remain. For build-only issues (prerender, images, feeds), build and preview.
 
 ## Verify
 
