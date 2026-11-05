@@ -79,6 +79,7 @@ These skills hold no project-specific commands, paths, or names. Each one lists 
 | [nix-darwin](./nix-darwin/SKILL.md) | Manage macOS defaults, Homebrew casks, Lix or Nix settings, and Home Manager with a nix-darwin flake. |
 | [sentry-bugfix](./sentry-bugfix/SKILL.md) | Triage Sentry errors for an environment and deliver a fix PR. |
 | [sentry-perf](./sentry-perf/SKILL.md) | Find and fix performance regressions from Sentry spans and web vitals. |
+| [onref](./onref/SKILL.md) | Coordinate the user's agents on one board keyed by refs: read before acting, claim work with intent, post done, ack after briefing the user. |
 
 ## License
 
