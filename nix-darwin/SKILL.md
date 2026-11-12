@@ -13,6 +13,7 @@ Repo facts (from `AGENTS.md` or `CLAUDE.md`): the flake directory path, the shar
 
 - Put macOS `system.defaults`, PAM settings, `/etc` files, and GUI Homebrew casks in the `nix-darwin` module.
 - Put CLI packages, dotfiles, shell aliases, `home.sessionVariables`, and user `launchd.agents` in the Home Manager module.
+- Put user `PATH` additions in `programs.zsh.initContent` or `zprofile` instead of relying only on `home.sessionPath` in `~/.zshenv`. macOS `/etc/zprofile` runs `path_helper` after `~/.zshenv`, and `login -pf` preserves `__HM_SESS_VARS_SOURCED`.
 - Put machine-specific hardware mappings, computer names, and host-only packages in the host module.
 - Prefer Nix packages for CLI tools and language toolchains. Prefer Homebrew casks for GUI `.app` bundles that auto-update or need macOS code-signing entitlements.
 
@@ -44,17 +45,15 @@ An agent background shell has no controlling terminal app, so `pam_tid.so` skips
    HM_ACTIVATE="$(nix build --no-link --print-out-paths "<flake-dir>#darwinConfigurations.${HOST}.config.home-manager.users.${USER}.home.activationPackage")"
    "$HM_ACTIVATE/activate"
    ```
+   Use full paths such as `/usr/bin/open`, `/usr/bin/pgrep`, `/usr/bin/defaults`, and `/usr/bin/security` inside `home.activation` scripts, which run with a minimal `PATH`.
 2. For `system.defaults` changes that belong to the current user (such as `com.apple.dock`, `com.apple.finder`, or `com.apple.screencapture`), write the same plist key with `defaults write` and restart the affected service (`killall Dock`, `killall Finder`, or `killall SystemUIServer`) so the change takes effect immediately.
-3. For root-only changes (`/etc`, PAM, system daemons, or Homebrew casks), ask the operator to run `sudo darwin-rebuild switch` in their terminal after `nix build` succeeds.
+3. For Homebrew casks, add the cask to `homebrew.casks` and run `brew install --cask <cask>` so the app installs right away. Pass `--adopt` if the `.app` bundle already exists in `/Applications`.
+4. For root-only changes (`/etc`, PAM, system daemons, or `.pkg` casks that prompt for `sudo`), ask the operator to run `sudo darwin-rebuild switch` in their terminal after `nix build` succeeds.
 
 ## Secrets and Homebrew drift
 
 - Never write tokens or credentials into `.nix` files. Everything copied into `/nix/store` is world-readable on the machine and tracked in Git.
 - Store secrets in the macOS Keychain with `security add-generic-password -U -a "$USER" -s "<service>" -w "<secret>"`. Read them at Home Manager activation or shell startup with `security find-generic-password -a "$USER" -s "<service>" -w`.
-- Before adding a Homebrew cask for an application that already exists in `/Applications`, adopt the existing bundle so `brew bundle` does not fail:
-  ```bash
-  brew install --cask --adopt <cask>
-  ```
 - Set `homebrew.onActivation.cleanup = "zap"` when you want activation to remove undeclared Homebrew formulae and casks. Check `brew list --formula` and `brew list --cask` before enabling it for the first time.
 - If an external installer such as Lix or the Determinate Nix Installer manages the Nix daemon (`nix.enable = false`), put custom daemon settings in `environment.etc."nix/nix.custom.conf"` instead of `nix.settings`.
 
