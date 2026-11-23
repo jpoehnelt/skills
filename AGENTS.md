@@ -20,6 +20,7 @@ Choose the prefix by the first rule that applies:
    - `eng-`: engineering practice (change checklists, testing, measurement, migrations, CLI design).
    - `comms-`: explaining and writing (how, why, review verdicts, technical writing, prose cleanup).
    - `agents-`: working with agents (subagent fan-out, reflection, correcting repeated mistakes, verification skills).
+   - `seo-`: search engine optimization (coaching, audits, search data, content strategy).
 
 Add a new topic prefix only when no existing one fits, and keep it short. Names are lowercase and hyphenated. The folder name must equal the `name:` field.
 

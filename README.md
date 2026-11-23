@@ -16,7 +16,7 @@ For example, `npx skills install jpoehnelt/skills/eng-change-checklist`.
 
 - A skill that depends on a framework or platform starts with its name: `effect-`, `svelte-`, `alchemy-`, `sentry-`.
 - A skill that drives the GitHub CLI starts with `gh-`.
-- Other skills start with a topic: `eng-` (engineering), `comms-` (communication), `agents-` (working with agents).
+- Other skills start with a topic: `eng-` (engineering), `comms-` (communication), `agents-` (working with agents), `seo-` (search and SEO).
 
 ## Repo facts
 
@@ -57,6 +57,12 @@ These skills hold no project-specific commands, paths, or names. Each one lists 
 | [agents-reflect](./agents-reflect/SKILL.md) | Turn session lessons into edits to skills or AGENTS.md. |
 | [agents-correct](./agents-correct/SKILL.md) | Make a repeated agent mistake impossible with architecture, types, lint, or tests. |
 | [agents-create-verification-skill](./agents-create-verification-skill/SKILL.md) | Generate a project-local skill that drives the real app like a user. |
+
+### SEO
+
+| Skill | Description |
+| --- | --- |
+| [seo-coach](./seo-coach/SKILL.md) | Guide SEO strategy, prioritization, and tool selection in short, scannable replies. |
 
 ### GitHub CLI
 
