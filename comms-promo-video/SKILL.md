@@ -11,7 +11,7 @@ Repo facts (from AGENTS.md): brand tokens (palette, display and body fonts, radi
 
 ## 1. Settle the brief from the repo first
 
-- Read the repo, design tokens, marketing copy, and existing media before asking questions. Propose a concrete brief and shot list, mark what you inferred, and ask only for what the repo cannot answer: goal, channel, exact CTA URL, or which real payoff file to show when several exist.
+- Read the repo, design tokens, marketing copy, and existing media before asking questions. Propose a concrete brief and shot list, mark what you inferred, and ask only for what the repo cannot answer: goal, channel, exact CTA URL, or which real payoff file to show when several exist. In unattended or headless runs, proceed with documented defaults and mark inferred choices clearly (or fail fast if no real payoff asset exists) instead of waiting for interactive input.
 - Offer once up front to follow any exact flow, copy line, or screen the user wants included or excluded. Do not stall behind a long intake form.
 - State explicitly whether the clip is a **standalone promo** (plays once on click, sound on, 15 to 60 seconds, ends on a logo and CTA) or an **embedded page loop** (autoplays muted, short, seamless seam back to frame 0). Never assume silently.
 - Never invent a fake payoff screenshot, fake metric, or lookalike asset. Use real product UI, real output files, or real captured recordings.

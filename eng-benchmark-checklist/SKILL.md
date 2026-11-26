@@ -1,15 +1,26 @@
 ---
 name: eng-benchmark-checklist
-description: Vet a performance measurement for limiter, tuning, limits, errors, repeatability, relevance, and whether the work happened before you report or act on it. Use when you run a benchmark or report a measured speedup or regression.
+description: Vet a performance measurement or agent evaluation for contamination, limiter, tuning, limits, errors, repeatability, relevance, and whether the work happened before you report or act on it. Use when you run a benchmark or report a measured speedup or regression.
 ---
 
 # Benchmark checklist
 
-Use this when you produce a performance number: a before and after, a regression claim, a tuning loop, or a library or config choice. Answer each question with evidence from a run, not a guess about the code.
+Use this when you produce a performance number or evaluation result: a before and after, a regression claim, a tuning loop, or a library or config choice. Answer each question with evidence from a run, not a guess about the code.
 
 For a quick ballpark the user asked for, one run is enough. Still check questions 4 and 7 and say it is one run. A choice between options is never a ballpark.
 
-Repo facts (from AGENTS.md or CLAUDE.md, or a harness README): the repo's load and benchmark harnesses, their default targets, and the metrics endpoints to scrape during a run.
+Repo facts (from AGENTS.md or CLAUDE.md, or a harness README): the repo's load and benchmark harnesses, their default targets, metrics endpoints to scrape during a run, and any AST keep-list or suppression allowlist for eval runs.
+
+## Pre-run contamination gate
+
+Before running a benchmark, eval sweep, or agent comparison, verify the fixture environment is uncontaminated:
+
+- **No leaked end-state or design docs:** confirm the benchmark checkout contains no `END_STATE.md`, solution notes, or post-fix design docs that give away answers.
+- **Isolated `HOME` and skills:** run with an isolated `HOME` (or explicit config flags) so global `~/.claude/skills`, user shell hooks, or personal dotfiles cannot bleed into the measured run.
+- **Human-reviewed keep-list:** when preserving public signatures or fixtures via an AST-derived keep-list, confirm the list was reviewed by a human before running the sweep.
+- **Enforced suppression allowlist:** lock `ast-grep-ignore` (or linter suppressions) to an explicit rule-ID allowlist so runs cannot silently suppress failing rules to game the score.
+
+In unattended or headless runs, fail fast if any contamination gate fails instead of waiting for interactive approval.
 
 ## Before you run anything
 
@@ -39,8 +50,7 @@ Repo facts (from AGENTS.md or CLAUDE.md, or a harness README): the repo's load a
 
 For a ballpark, only the claim sentence and questions 4 and 7 apply, and the report says it is one run. Otherwise:
 
-- The claim sentence was written before the runs.
-- Limiter named from a profile, not from reading code.
-- Every side tuned the same way production is.
-- At least 5 alternating runs per side, with median and range.
+- Pre-run contamination gate passed (no leaked design docs, isolated `HOME`, reviewed keep-list, enforced `ast-grep-ignore` allowlist).
+- The claim sentence was written before the runs; limiter named from a profile, not from reading code.
+- Every side tuned the same way production is, with at least 5 alternating runs per side (median and range).
 - Errors counted and work confirmed inside the timed region.

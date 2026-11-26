@@ -40,5 +40,5 @@ Repo facts (from AGENTS.md): where decks and notes live, how to preview them, an
 
 ## Report
 
-- Before editing: a table of slide, original line, and plain version or "Cut it"; notes lines grouped by pattern; rewrites that need evidence. Ask before applying.
+- Before editing: a table of slide, original line, and plain version or "Cut it"; notes lines grouped by pattern; rewrites that need evidence. Ask before applying (in unattended or headless runs, apply only mechanical one-liner cuts that need no new evidence and list evidence-dependent rewrites in the report instead of waiting for interactive input).
 - After: moved slides with old positions, references fixed, lines cut or rewritten, claims softened and why, and the slide count.

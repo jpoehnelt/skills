@@ -11,7 +11,7 @@ Repo facts (from AGENTS.md, CLAUDE.md, or README.md): the local run command, por
 
 ## 1. Interview the repo, not the user
 
-Answer from the codebase. Ask the user in chat only about what you cannot observe.
+Answer from the codebase. Ask the user in chat only about what you cannot observe (in unattended or headless runs, use the safest observable default or fail fast with the exact missing fact instead of waiting for interactive input).
 
 - **Surface.** Web UI, CLI, TUI, API, desktop, mobile, or device. Pick the primary one; a repo with several gets one skill per surface.
 - **Run.** Read `package.json` scripts, `Makefile`, `README.md`, and `AGENTS.md` for the documented start command, ports, env vars, seed data, and auth. Prefer a one-command local stack when the repo has one.

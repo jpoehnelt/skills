@@ -15,7 +15,7 @@ Repo facts (from AGENTS.md): production Worker name and custom domain, Alchemy s
 - Restrict production and wait environments to the default branch. Use a custom domain rather than `workers.dev` when browser version affinity is required.
 - Enable Workers Logs, invocation logs, and full sampling before the first gradual rollout. Preserve existing logs and trace destinations during partial deploys.
 - Serialize releases and reject superseded revisions before deployment and before each traffic increase.
-- Require explicit authorization for manual production deploys, remote migrations, live traffic changes, or recovery runs.
+- Require explicit authorization for manual production deploys, remote migrations, live traffic changes, or recovery runs (in unattended or headless runs without prior authorization, stop and report the required authorization blocker instead of waiting for interactive input).
 
 ## Staged rollout
 

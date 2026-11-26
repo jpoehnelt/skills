@@ -37,6 +37,7 @@ Do not mix modes. Split and link instead.
 ## Sentences
 
 - Address the reader as "you", in the present tense.
+- **No fake first-person `"I"` in AI-authored drafts or posts.** Never write fabricated first-person anecdotes or opinions ("I built...", "I noticed...") in AI-generated articles, blog posts, or changelogs. Use plain declarative claims grounded in evidence, or include an explicit AI co-author disclosure when the author directs a personal voice.
 - Name the actor: "the compiler checks", not "is checked".
 - Write instructions as commands. Put the condition first: "To delete the file, run X."
 - Put the common case first and exceptions after.
@@ -76,6 +77,6 @@ Do not mix modes. Split and link instead.
 ## Review checklist
 
 - One document, one mode.
-- Every sentence has a named actor and a single reading.
+- Every sentence has a named actor and a single reading; no fake first-person `"I"` in AI-authored drafts.
 - Every path, flag, and command exists.
 - `comms-unslop` pass done.

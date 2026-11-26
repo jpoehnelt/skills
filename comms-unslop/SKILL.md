@@ -7,12 +7,19 @@ description: Cut machine-written patterns from prose and UI chrome while keeping
 
 Edit text to remove AI patterns. Scan for the patterns below, then rewrite. Preserve meaning and match the intended tone. Keep the author's vocabulary, cadence, and uncertainty. Do not add claims or certainty the draft lacks.
 
+Repo facts (from AGENTS.md): automated prose, brand-term, and SEO or frontmatter lint commands, banned legacy brand terms, and single-source constant files for pricing, limits, and contact details.
+
 For detection-only requests, quote each pattern and suggest a fix. Do not rewrite the whole draft, and do not claim to know whether AI wrote it.
+
+## Run automated checks first
+
+Run the repo's automated prose, brand-term, and frontmatter checks first so mechanical defects (em dashes, curly quotes, banned legacy product names, frontmatter length caps, bare URLs, unlabeled code fences) are caught deterministically. Spend manual editing on judgment calls: cutting filler sections, flattening aphorisms, and checking factual grounding.
 
 ## Content
 
 - **Superficial -ing phrases.** "highlighting...", "ensuring...", "showcasing...". Delete or give a real source.
 - **Vague attributions.** "Experts believe", "Studies suggest". Name the source or delete.
+- **Factual grounding.** Verify dates, metrics, handles, emails, and capability or pricing claims against code or primary sources before keeping them. Derive repeated prices, limits, and contact emails from typed constants rather than hand-copied prose.
 
 ## Language
 
@@ -64,8 +71,8 @@ For detection-only requests, quote each pattern and suggest a fix. Do not rewrit
 
 ## Verify
 
-- No em dashes, emojis, curly quotes, or title case headings remain.
-- No word from the AI vocabulary or metaphor noun lists remains.
-- Every sentence states a fact, instruction, or number.
-- In UI surfaces, no decorative pills, eyebrow badges, hero glows, background grids, or unrequested filter bars remain.
+- Automated prose, brand-term, and frontmatter checks pass with zero banned legacy terms.
+- Dates, metrics, emails, and pricing claims match code or typed constants.
+- No em dashes, emojis, curly quotes, title case headings, or words from the AI vocabulary or metaphor noun lists remain.
+- Every sentence states a fact, instruction, or number; UI surfaces have no decorative pills, glows, grids, or unrequested filter bars.
 - Meaning, technical accuracy, and the author's stated uncertainty are unchanged.

@@ -7,7 +7,7 @@ description: Decide whether a change needs a test, where it lives, what it asser
 
 Add a test when it would catch a regression a reviewer would miss. Types, lint, a rendered component, or a run of the app prove most changes without one.
 
-Repo facts (from AGENTS.md): the test policy (when a test is required, allowed, or discouraged), the runner and file pattern per package, shared test helpers and in-memory fakes, the lint rules that enforce test hygiene, the story or visual-test limits, which CI stage runs which tests, and the check commands from one file up to the pre-PR suite. The repo's policy wins over this skill. Before writing a test, search the installed skills for one that covers testing in the framework or runtime the code uses, and follow its helpers and patterns alongside this one.
+Repo facts (from AGENTS.md): the test policy (when a test is required, allowed, or discouraged), the runner and file pattern per package, shared test helpers and in-memory fakes, the lint rules that enforce test hygiene (such as banning ambient clocks, random UUIDs, or source-file reads in tests), the story or visual-test limits, which CI stage runs which tests, and the check commands from one file up to the pre-PR suite. The repo's policy wins over this skill. Before writing a test, search the installed skills for one that covers testing in the framework or runtime the code uses, and follow its helpers and patterns alongside this one.
 
 ## Decide whether to write one
 
@@ -26,13 +26,24 @@ Repo facts (from AGENTS.md): the test policy (when a test is required, allowed, 
 - Arrange, Act, Assert; one behavior per test.
 - Assert a specific value, status, error type, or schema contract. "Is defined" and "is not null" pass for the wrong value.
 - Component tests assert behavior, contracts, and accessibility semantics (roles, names, states), never CSS classes, styling, or raw markup. Visual checks belong in rendered stories or screenshot tests.
+- Never read production source files (`readFileSync('src/...')`) to grep CSS, classes, or markup in unit tests; assert rendered or runtime behavior instead.
 - No focused or skipped tests (`.only`, `.skip`) in a commit.
+
+## Property, fuzz, and differential tests
+
+- For parsers, URL normalizers, or pattern matchers, pair example tests with property or fuzz tests (such as `fast-check`) asserting idempotence (`normalize(normalize(x)) === normalize(x)`), a strict anti-ReDoS latency bound (under 10ms on repeated delimiters or wildcards), and an adversarial corpus (empty strings, quoted syntax, XML namespaces, HTML comments, non-ASCII UTF-8, trailing slashes, uppercase hosts, and prototype keys).
+- For state machines or snapshot-plus-stream projectors, add a differential parity test (`project(snapshot) === project(applyEvents(init, log))`); see `eng-state-machine`.
 
 ## Make it deterministic
 
 - Provide dependencies as in-memory fakes that behave like the real ones, not hand-built mocks of client calls.
-- Control time and randomness through an injected clock and random source, not by stubbing globals.
+- Control time and randomness through an injected clock and random source, not by stubbing globals. Enforce this with the repo's lint rule banning ambient `Date.now()`, `new Date()`, and `crypto.randomUUID()` in tests.
 - Test failure paths, retries, cancellation, and cleanup where their behavior is uncertain; do not test the framework's own behavior.
+
+## Debugging and probe discipline
+
+- Cap ad-hoc inline shell probes (`node -e`, `tsx -e`) at 2 attempts. If a probe fails twice, stop guessing: read the module's actual exports or write a focused test file.
+- List or glob files before running batch reads so you never burn turns on guessed paths. Pass raw filesystem paths for framework route groups (such as `(app)/+page.svelte`), never URL-encoded paths (`%28app%29`).
 
 ## Stories and end-to-end tests
 
@@ -45,8 +56,8 @@ Run one file, then the changed packages, then the repo's pre-PR suite. Use the r
 
 ## Review checklist
 
-- Each new test covers an uncertain branch or a past bug; otherwise it is deleted or the code is simplified.
+- Each new test covers an uncertain branch or a past bug; parsers and projectors have property or differential tests where warranted.
 - Tests sit beside the code, in the module that owns it, and move with it.
-- Every assertion names a value or contract; none is vacuous, styling-based, focused, or skipped.
-- Time, randomness, and services come from fakes and an injected clock.
-- Story count stays bounded.
+- Every assertion names a value or contract; none reads `src/` files to grep markup/CSS, or is vacuous, styling-based, focused, or skipped.
+- Time, randomness, and services come from fakes and an injected clock (no ambient `Date.now()`, `new Date()`, or `crypto.randomUUID()`).
+- Ad-hoc probes stayed at 2 attempts or fewer, and story count stays bounded.

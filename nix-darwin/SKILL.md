@@ -48,7 +48,7 @@ An agent background shell has no controlling terminal app, so `pam_tid.so` skips
    Use full paths such as `/usr/bin/open`, `/usr/bin/pgrep`, `/usr/bin/defaults`, and `/usr/bin/security` inside `home.activation` scripts, which run with a minimal `PATH`.
 2. For `system.defaults` changes that belong to the current user (such as `com.apple.dock`, `com.apple.finder`, or `com.apple.screencapture`), write the same plist key with `defaults write` and restart the affected service (`killall Dock`, `killall Finder`, or `killall SystemUIServer`) so the change takes effect immediately.
 3. For Homebrew casks, add the cask to `homebrew.casks` and run `brew install --cask <cask>` so the app installs right away. Pass `--adopt` if the `.app` bundle already exists in `/Applications`.
-4. For root-only changes (`/etc`, PAM, system daemons, or `.pkg` casks that prompt for `sudo`), ask the operator to run `sudo darwin-rebuild switch` in their terminal after `nix build` succeeds.
+4. For root-only changes (`/etc`, PAM, system daemons, or `.pkg` casks that prompt for `sudo`), ask the operator to run `sudo darwin-rebuild switch` in their terminal after `nix build` succeeds (in unattended or headless runs, verify `nix build` and exit with the exact manual `sudo` command as a blocker instead of waiting for interactive input).
 
 ## Secrets and Homebrew drift
 
