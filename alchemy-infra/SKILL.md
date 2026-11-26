@@ -38,16 +38,19 @@ Then check drift by comparing secret names, never values, across the stack list,
 
 ## Failures
 
-Identify the failing layer (build, secret fetch, plan, apply, runtime) before retrying. A successful deploy does not prove the app or its datastores are ready.
+Identify the failing layer (build, secret fetch, plan, apply, or runtime) before retrying. Run [scripts/deploy-snapshot.sh](scripts/deploy-snapshot.sh) to inspect deploy workflow declarations and recent runs before acting. Use `gh-ci-triage` for build or test failures, and `cloudflare-gradual-release` for staged Cloudflare Workers rollouts.
 
 - Missing or empty secret: the deploy should fail before any cloud change. Fix the Infisical or CI value and rerun.
 - Adoption guards (a KV namespace or domain resolving to an unexpected resource, or a domain attached to another Worker): fix the input or detach deliberately. Do not use `--adopt` on ordinary deploys.
 - Build or apply error: rebuild through the task runner first, then rerun the same stage.
-- Unknown stage or unloaded environment: the stack should fail fast on a sentinel secret; run through the repo's secret-injection wrapper (for example `infisical run --env=<env> --path=<path> -- ...`).
+- Unknown stage or unloaded environment: the stack should fail fast on a sentinel secret. Run through the repo's secret-injection wrapper (for example `infisical run --env=<env> --path=<path> -- ...`).
+- Release identity and readiness: verify the deployed commit SHA or version metadata separately from `/healthz` or `/ready`. A green CI run or healthy process does not prove the intended commit serves traffic.
+- Auth or login loops after a rollout: inspect auth configuration, origin, session, and datastore paths before blaming secrets.
+- Shared stages: verify actual datastore endpoints before writing to a staging or shared stage. A stage name does not guarantee data isolation.
 
 ## Rollback
 
-There is usually no rollback command and production resources are retained. Revert the offending commit on the default branch so CI redeploys, or check out the last good commit, build, and deploy that stage. Do not roll back across an applied database migration without a forward fix.
+There is usually no rollback command and production resources are retained. Revert the offending commit on the default branch so CI redeploys, or check out the last good commit, build, and deploy that stage. Do not roll back across an applied database migration without a forward fix. When native provider traffic promotion or rollback changes live routing outside Alchemy, reconcile Alchemy state before the next deployment.
 
 Do not deploy to shared or production stages, run `destroy`, tear down a stack with data, or use `--adopt` against production without explicit authorization.
 

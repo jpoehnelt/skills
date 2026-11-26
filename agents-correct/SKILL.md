@@ -20,7 +20,7 @@ Read recent commits, reverts, review comments, agent instruction files, and comm
 The ladder, in order: architecture, types, lint, tests, docs.
 
 1. **Eliminate it with architecture.** Give each piece of state one owner and each task one supported way. Hide internals so the wrong import fails. Replace hand-synced lists with one source of truth. Delete old ways and dead code an agent would copy.
-2. **Enforce it with types** (schemas, branded IDs, tagged unions) so the bad state cannot be written. If bad code still compiles, add a rule to the repo's existing lint or CI check system, with a test case if that system has rule tests, whose error names the file, type, or function to use instead. If the pattern is already common, fail only when a change adds more.
+2. **Enforce it with types** (schemas, branded IDs, tagged unions) so the bad state cannot be written. If bad code still compiles, add a rule to the repo's existing lint or CI check system, with a test case if that system has rule tests, whose error names the file, type, or function to use instead. If the pattern is already common, fail only when a change adds more. For cross-file design, token, or copy rules that do not fit a standard linter, add a repo check test with a committed baseline count that may only decrease, and lower the baseline as you remove violations.
 3. **Test the behavior**, following the repo's test policy. Where it prefers fewer tests, decompose uncertain code or flag it for review instead. Fix or delete any test that still passes when the behavior it checks breaks, or that fails when only internals change.
 4. **Write docs or agent rules last**, and only for judgment calls. Nothing fails when an agent skips them.
 

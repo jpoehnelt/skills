@@ -14,7 +14,7 @@ For example, `npx skills install jpoehnelt/skills/eng-change-checklist`.
 
 ## Naming
 
-- A skill that depends on a framework or platform starts with its name: `effect-`, `svelte-`, `alchemy-`, `sentry-`.
+- A skill that depends on a framework or platform starts with its name: `effect-`, `svelte-`, `alchemy-`, `cloudflare-`, `drizzle-`, `sentry-`.
 - A skill that drives the GitHub CLI starts with `gh-`.
 - Other skills start with a topic: `eng-` (engineering), `comms-` (communication), `agents-` (working with agents), `seo-` (search and SEO).
 
@@ -37,6 +37,9 @@ These skills hold no project-specific commands, paths, or names. Each one lists 
 | [eng-cutover-verification](./eng-cutover-verification/SKILL.md) | Prove a migration, library swap, or removal is complete, with an audit script. |
 | [eng-state-machine](./eng-state-machine/SKILL.md) | Model an entity lifecycle as a state machine with a pure decide, one guarded write, and outbox events. |
 | [eng-agent-dx-cli-scale](./eng-agent-dx-cli-scale/SKILL.md) | Score how well a CLI is designed for AI agents. |
+| [eng-monorepo](./eng-monorepo/SKILL.md) | Maintain pnpm workspaces, Turborepo task graphs, shared TypeScript configs, and Changesets wiring. |
+| [eng-qa-cujs](./eng-qa-cujs/SKILL.md) | Exercise critical user journeys across app surfaces with exploratory variations and evidence reports. |
+| [eng-ai-features](./eng-ai-features/SKILL.md) | Ship user-facing AI features under grounding, consent, fallback, cost, and admin-isolation guardrails. |
 
 ### Communication
 
@@ -49,6 +52,7 @@ These skills hold no project-specific commands, paths, or names. Each one lists 
 | [comms-unslop](./comms-unslop/SKILL.md) | Remove machine-written patterns from prose. |
 | [comms-impact](./comms-impact/SKILL.md) | State a change's effect on users and the business: when someone does X, now Y, before Z. |
 | [comms-slides](./comms-slides/SKILL.md) | Replace one-liners in slides and notes with plain claims and keep slide order consistent. |
+| [comms-promo-video](./comms-promo-video/SKILL.md) | Plan, storyboard, build, score, and visually verify product launch and promo videos. |
 
 ### Agents
 
@@ -83,6 +87,8 @@ These skills hold no project-specific commands, paths, or names. Each one lists 
 | [svelte-ui-delivery](./svelte-ui-delivery/SKILL.md) | Build and verify Svelte 5 UI changes with rendered evidence. |
 | [svelte-shadcn](./svelte-shadcn/SKILL.md) | Write and customize shadcn-svelte components: Bits UI, tailwind-variants, and Tailwind v4 tokens. |
 | [alchemy-infra](./alchemy-infra/SKILL.md) | Change, deploy, and debug Alchemy v2 stacks and Infisical secrets. |
+| [cloudflare-gradual-release](./cloudflare-gradual-release/SKILL.md) | Run, observe, and recover gradual Cloudflare Workers rollouts with probes, Workers Logs, and Alchemy reconciliation. |
+| [drizzle-postgres](./drizzle-postgres/SKILL.md) | Change, generate, push, and verify PostgreSQL schemas managed with Drizzle ORM. |
 | [nix-darwin](./nix-darwin/SKILL.md) | Manage macOS defaults, Homebrew casks, Lix or Nix settings, and Home Manager with a nix-darwin flake. |
 | [sentry-bugfix](./sentry-bugfix/SKILL.md) | Triage Sentry errors for an environment and deliver a fix PR. |
 | [sentry-perf](./sentry-perf/SKILL.md) | Find and fix performance regressions from Sentry spans and web vitals. |
