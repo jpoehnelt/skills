@@ -23,7 +23,7 @@ git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null \
      done
 ```
 
-If it prints nothing, ask the user for the base branch.
+If it prints nothing, ask the user for the base branch (in unattended or headless runs, fail fast with a clear missing-base-branch blocker instead of waiting for input).
 
 - If the user refers to recent work, gather those files with `git status` and `git diff`.
 
@@ -31,7 +31,7 @@ Collect the diff plus any context files reviewers need to understand it.
 
 ## 2. Intent
 
-State the intent in one paragraph, drawn from the user's message, commit messages, the PR description, and the code. If the intent is unclear, ask the user in chat before spawning reviewers.
+State the intent in one paragraph, drawn from the user's message, commit messages, the PR description, and the code. If the intent is unclear, ask the user in chat before spawning reviewers (in unattended or headless runs, infer intent from commits and diff, mark assumptions explicitly, and proceed).
 
 ## 3. Spawn reviewers
 

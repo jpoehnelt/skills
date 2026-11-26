@@ -18,10 +18,10 @@ Before editing, write down:
 - Focused tests that prove behavior is preserved. For datastore cutovers, include the test harnesses and store unit tests.
 - Generated artifacts to refresh.
 
-Encode the proof with [`scripts/cutover-audit.sh`](scripts/cutover-audit.sh). It is read-only: it searches tracked files and runs only the commands you pass, from the repo root, each bounded by `--timeout` (default 900 seconds).
+Encode the proof with [`scripts/cutover-audit.mjs`](scripts/cutover-audit.mjs). It is read-only: it searches tracked files and runs only the commands you pass, from the repo root, each bounded by `--timeout` (default 900 seconds).
 
 ```bash
-<skill-dir>/scripts/cutover-audit.sh \
+<skill-dir>/scripts/cutover-audit.mjs \
   --retired 'old config file:::service/legacy.toml:::.' \
   --retired 'old import:::src:::from "old-lib"' \
   --required 'replacement:::src/lib:::from "new-lib"' \

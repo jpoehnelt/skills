@@ -11,7 +11,7 @@ Repo facts (from AGENTS.md or CLAUDE.md): engineering rules and invariants to re
 
 ## Select candidates
 
-1. Run [`scripts/review-candidates.sh`](scripts/review-candidates.sh) `<cutoff> [owner/repo]` with a UTC cutoff (`YYYY-MM-DDTHH:MM:SSZ`). It lists open PRs updated after the cutoff in the `origin` repo.
+1. Run [`scripts/review-candidates.mjs`](scripts/review-candidates.mjs) `<cutoff> [owner/repo]` with a UTC cutoff (`YYYY-MM-DDTHH:MM:SSZ`). It lists open PRs updated after the cutoff in the `origin` repo.
 2. Review only PRs updated after the cutoff. If none changed, check open threads you own for fixes that landed.
 3. If no PR or thread needs action, stop without writing to GitHub.
 

@@ -19,7 +19,7 @@ Repo facts (from AGENTS.md): surface-to-CUJ-catalog paths, local stack start com
 
 - Run build scripts and signed-in journeys only on code you trust (your own branch or a reviewed change). For unreviewed external changes, use a sandbox with a stub backend and an empty profile.
 - Use disposable local fixtures, test profiles, and test devices. Before running any publisher, load generator, or CLI against a network endpoint, verify the target URL so synthetic traffic never hits a shared or production service without authorization.
-- Require explicit authorization before clearing app state on a personal device or targeting shared staging or production data.
+- Require explicit authorization before clearing app state on a personal device or targeting shared staging or production data (in unattended or headless runs without prior authorization, mark the journey blocked instead of waiting for interactive input).
 - Never complete a production checkout, enter payment details, or sign out of a shared account. Never overwrite committed fixture sources.
 
 ## Exercise and report

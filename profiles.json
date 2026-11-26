@@ -1,0 +1,73 @@
+{
+  "$schema": "./schemas/skills-manifest.v1.json",
+  "version": 1,
+  "profiles": {
+    "base": [
+      "agents-correct",
+      "agents-create-verification-skill",
+      "agents-reflect",
+      "agents-swarm",
+      "comms-how",
+      "comms-impact",
+      "comms-interrogate",
+      "comms-technical-writing",
+      "comms-unslop",
+      "comms-why",
+      "eng-agent-dx-cli-scale",
+      "eng-ai-features",
+      "eng-benchmark-checklist",
+      "eng-blast-radius",
+      "eng-change-checklist",
+      "eng-cutover-verification",
+      "eng-migration",
+      "eng-monorepo",
+      "eng-tdd",
+      "eng-testing",
+      "gh-ci-triage",
+      "gh-issue-burndown",
+      "gh-pr-commit-review",
+      "gh-pr-feedback-loop"
+    ],
+    "effect": [
+      "effect",
+      "effect-boundary-validation",
+      "effect-seam-migration",
+      "eng-data-backward-compat",
+      "eng-migration",
+      "eng-state-machine"
+    ],
+    "svelte": [
+      "eng-qa-cujs",
+      "reg-suit",
+      "svelte-shadcn",
+      "svelte-ui-delivery",
+      "ui-audit-loop"
+    ],
+    "cloudflare": [
+      "alchemy-infra",
+      "cloudflare-edge-hardening",
+      "cloudflare-gradual-release"
+    ],
+    "drizzle": [
+      "drizzle-postgres",
+      "eng-data-backward-compat"
+    ],
+    "web-content": [
+      "comms-promo-video",
+      "comms-slides",
+      "seo-coach",
+      "ui-audit-loop"
+    ],
+    "autonomous": [
+      "agents-autonomous-loops",
+      "gh-issue-burndown"
+    ],
+    "sentry": [
+      "sentry-bugfix",
+      "sentry-perf"
+    ],
+    "macos": [
+      "nix-darwin"
+    ]
+  }
+}

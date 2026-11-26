@@ -1,0 +1,25 @@
+{
+  "name": "@jpoehnelt/skills-sync",
+  "version": "2.0.0",
+  "description": "Reusable agent skills collection and zero-dependency lockfile sync CLI",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "bin": {
+    "skills-sync": "./bin/skills-sync.mjs"
+  },
+  "exports": {
+    ".": "./scripts/skills-sync.mjs",
+    "./profiles.json": "./profiles.json",
+    "./schemas/skills-manifest.v1.json": "./schemas/skills-manifest.v1.json"
+  },
+  "scripts": {
+    "check": "node scripts/ci/check-skills.mjs && node scripts/ci/check-scripts.mjs",
+    "check:skills": "node scripts/ci/check-skills.mjs",
+    "check:scripts": "node scripts/ci/check-scripts.mjs",
+    "test": "node --test 'tests/**/*.test.mjs'",
+    "skills-sync": "node bin/skills-sync.mjs"
+  }
+}

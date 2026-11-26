@@ -42,7 +42,7 @@ With several independent groups and authorization to delegate, fan out one read-
 1. Reproduce the observed failure locally or with a focused check in the owning package.
 2. Make the minimal fix at the cause, in the owning module. Preserve typed failures and their causes, tenant scoping, and resource cleanup (effect, effect-boundary-validation in Effect repos). Add a regression test only where branch behavior is uncertain (eng-tdd when a cheap one exists).
 3. Run the repo's affected checks. Open a Conventional Commit `fix(scope): ...` PR linking the Sentry issue and the observed release, then follow gh-pr-feedback-loop.
-4. Do not resolve the Sentry issue because code was pushed. Wait for the authorized deploy and a meaningful observation window.
+4. Do not resolve the Sentry issue because code was pushed. Wait for the authorized deploy and a meaningful observation window (in unattended or headless runs, leave the issue open and report the delivered PR instead of waiting).
 
 ## Review checklist
 
