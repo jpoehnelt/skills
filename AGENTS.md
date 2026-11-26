@@ -14,7 +14,7 @@ This repo is a public collection of reusable agent skills. Each skill must work 
 
 Choose the prefix by the first rule that applies:
 
-1. **Framework or platform.** A skill that only makes sense with one framework or platform starts with its name: `effect-`, `svelte-`, `alchemy-`, `sentry-`. Use the bare name (`effect`) for the skill that covers the framework's general conventions.
+1. **Framework or platform.** A skill that only makes sense with one framework or platform starts with its name: `effect-`, `svelte-`, `alchemy-`, `cloudflare-`, `drizzle-`, `sentry-`. Use the bare name (`effect`) for the skill that covers the framework's general conventions.
 2. **GitHub CLI.** A skill whose procedure or scripts run `gh` starts with `gh-`. A skill that only mentions `gh` as an optional alternative does not.
 3. **Topic.** Every other skill starts with a short topic prefix:
    - `eng-`: engineering practice (change checklists, testing, measurement, migrations, CLI design).

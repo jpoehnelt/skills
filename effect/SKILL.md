@@ -41,6 +41,7 @@ const load = Effect.fn("loadOrder")(function* (id: string) {
 
 - Narrow with `Effect.catchTag`/`catchTags`, never by comparing a `code` or message string.
 - Lift a Promise API with `Effect.tryPromise({ try, catch: (cause) => new SpecificError({ cause }) })`. Never a zero-arg `catch`, never one generic catch-all class. An unmapped throw stays a defect.
+- For a deliberate local fallback (such as keeping raw input when parsing fails), use `Effect.orElseSucceed` with a one-line reason comment. Never hide a real failure with `Effect.catch(() => Effect.succeed(null))` or an unused catch binding.
 - Decode an error of unknown shape (RPC envelope, stored JSON, step failure) with a `Schema.Union` of the classes that operation admits, and derive the type from that schema. Never guess a class.
 - The public wire shape is an explicit projection (`{ code, message }` plus any public fields). Never encode the error class itself: that emits `name`, `message`, and nested `cause`.
 - Defects (bugs, missing config, broken bindings, failed setup) stay defects. Do not wrap setup or pure factories in `Effect.try`, and do not `Effect.catchDefect`/`catchCause` them into a domain error. The boundary runner reports and sanitizes them.
@@ -74,7 +75,7 @@ Effect v4 has no state-machine module. Follow `eng-state-machine` for the design
 - Trace service boundaries with `Effect.fn("operationName")(function* () {...})`; add dynamic attributes with `Effect.annotateCurrentSpan`. Private helpers stay untraced.
 - Outbound HTTP uses `HttpClient` with `FetchHttpClient.layer` (the module path depends on the installed v4 build: `effect/http` or `effect/unstable/http/*`; follow existing imports). Scope the response. No raw `fetch` with `AbortSignal.timeout`, `Promise.race` timers, or hand-rolled in-flight promise sets.
 - Give external I/O one total deadline covering setup, retries, retry delays, and body consumption: `Effect.timeout` around the whole retried operation, and `Effect.retry({ while: isTransient, times, schedule: Schedule.exponential(...).pipe(Schedule.jittered) })` inside it.
-- Concurrency is `Effect.all`/`Effect.forEach` with explicit `{ concurrency }`, never `Promise.all` inside `Effect.gen`. Long-lived consumers use `Stream`, `Queue`, and `Fiber`/`FiberSet`, not ad hoc timers.
+- Concurrency is `Effect.all`/`Effect.forEach` with explicit `{ concurrency }`, never `Promise.all` inside `Effect.gen`. Replace hand-written Promise lock chains with `Semaphore.make`, or `PartitionedSemaphore` for a lock per key. Long-lived consumers use `Stream`, `Queue`, and `Fiber`/`FiberSet`, not ad hoc timers.
 - Scope child work to its request, document, or connection. Interruption must join bounded cleanup before release; lift fallible finalizers with `Effect.tryPromise` and `Effect.orDie` an unrecoverable release failure.
 
 ## Testing
