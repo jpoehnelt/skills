@@ -29,6 +29,18 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node }}
+      - name: Install ripgrep (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          if ! command -v rg >/dev/null 2>&1; then
+            sudo apt-get update && sudo apt-get install -y ripgrep
+          fi
+      - name: Install ripgrep (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          if ! command -v rg >/dev/null 2>&1; then
+            brew install ripgrep
+          fi
       - name: Check skills metadata, links, profiles, and prose rules
         env:
           PRIVATE_NAMES: ${{ vars.PRIVATE_NAMES || '' }}
