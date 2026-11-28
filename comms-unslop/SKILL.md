@@ -1,6 +1,6 @@
 ---
 name: comms-unslop
-description: Cut machine-written patterns from prose and UI chrome while keeping meaning and voice, or flag them without rewriting. Use when drafting or editing prose, docs, PR descriptions, commit messages, replies, or UI surfaces that read machine-generated.
+description: Cut machine-written patterns from prose and UI chrome while keeping meaning and voice, or flag them without rewriting. Use when planning, building, or reviewing landing pages, or when drafting or editing prose, docs, PR descriptions, commit messages, replies, or UI copy.
 ---
 
 # Unslop
@@ -64,7 +64,13 @@ Run the repo's automated prose, brand-term, and frontmatter checks first so mech
 
 ## UI chrome
 
-- **Decorative pills and eyebrow badges.** Category pills above headings, version or status badges that carry no live state, and non-interactive tag chips. Delete them.
+For landing pages, apply these rules before choosing a layout and again when reviewing the rendered page.
+
+- **Labels above the hero headline.** Open the hero with the headline. Add a badge, pill, or plain eyebrow label above it only when the user requests one or the accepted design includes it. Apply the same rule to template defaults. Put verified details that help visitors decide in supporting copy. Put setup instructions in the docs.
+- **Decorative section labels.** Remove category chips used as section labels, decorative tags, and version or status badges with no meaningful state. Use numbered labels for actual sequences. Keep labels that communicate meaningful state and chips that serve a user action.
+- **Repeated feature cards.** Use a list for peer features that need only a short explanation. Give the main claim room for a concrete example or real product screenshot. Use a card grid when visitors need to scan or compare distinct items.
+- **Unsourced proof.** Verify metrics, customer logos, testimonials, and status claims against their sources. Omit unsupported claims and any proof block that would be empty.
+- **Decorative motion.** Remove pulsing dots on static labels, blinking cursors on static text, and repeated scroll reveals. Use motion to show a meaningful change or direct attention to an important element.
 - **Ornamental backgrounds.** Radial hero glows, decorative grid or dot-matrix backgrounds, and two-tone or gradient heading text. Use a flat surface and one text color.
 - **Card-in-card wrappers.** Multi-band cards (header bar, body, muted footer bar) around content that already sits in a section, or a card per paragraph. Use whitespace and hairlines instead.
 - **Unrequested chrome.** Filter bars, search boxes, sort toggles, count badges, and decorative icons on every alert or heading that the task did not ask for. Cut them.
@@ -74,5 +80,6 @@ Run the repo's automated prose, brand-term, and frontmatter checks first so mech
 - Automated prose, brand-term, and frontmatter checks pass with zero banned legacy terms.
 - Dates, metrics, emails, and pricing claims match code or typed constants.
 - No em dashes, emojis, curly quotes, title case headings, or words from the AI vocabulary or metaphor noun lists remain.
-- Every sentence states a fact, instruction, or number; UI surfaces have no decorative pills, glows, grids, or unrequested filter bars.
+- Every sentence states a fact, instruction, or number. UI surfaces have no decorative pills, glows, grids, or unrequested filter bars.
+- On a rendered landing page, check the first viewport at phone and desktop widths. Each label above the hero headline was requested or shown in the accepted design. Each proof claim has a source.
 - Meaning, technical accuracy, and the author's stated uncertainty are unchanged.
