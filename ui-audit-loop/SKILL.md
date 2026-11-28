@@ -5,7 +5,7 @@ description: Visually audit rendered web pages with Playwright screenshots at de
 
 # UI audit loop
 
-Code and unit tests do not catch clipped mobile layouts, unreadable dark-mode contrast, broken favicons, or decorative slop. Capture real rendered screenshots, inspect every image, fix defects, and re-verify until zero P0 or P1 visual issues remain. Pair with `svelte-ui-delivery` for implementation rules, `comms-unslop` for copy, and `reg-suit` for CI visual baselines.
+Code and unit tests do not catch clipped mobile layouts, unreadable dark-mode contrast, broken favicons, or decorative slop. Capture real rendered screenshots, inspect every image, fix defects, and re-verify until zero P0 or P1 visual issues remain. Pair with `svelte-ui-delivery` for implementation rules, `comms-unslop` for copy and UI chrome, and `reg-suit` for CI visual baselines.
 
 Repo facts (from AGENTS.md): local dev or preview start command (supporting dynamic port or printed URL), health-check URL, key routes to audit, seeded sign-in or auth state, Playwright and axe commands, live-vs-new asset parity baseline URL (for migrations), and screenshot artifact directory.
 
@@ -29,8 +29,8 @@ Assert these checks on every audited route and viewport:
 
 Inspect every captured screenshot directly and flag any P0 (broken layout, overflow, unreadable contrast, missing image) or P1 (visual clutter, slop, raw internals):
 
-- No decorative hero pills, eyebrow badges, or non-interactive tag chips above headings.
-- No generic 3-card feature grids or 3-step filler sections unless the content genuinely needs them.
+- Apply the UI chrome rules in `comms-unslop` to the first viewport and the full page at both widths. On landing pages, flag pills, pretitles, or eyebrows above the hero headline unless the user requested them or the accepted design includes them. Check template defaults too.
+- Flag filler sections, repeated cards that serve no comparison or scanning need, and static elements that animate for attention. Check the source for each visible metric, testimonial, customer logo, and status claim.
 - No internal jargon, debug strings, or implementation labels exposed in user-facing UI.
 - No raw unmapped enum strings (such as `not_stated`, `snake_case`, or `undefined`) rendered in templates.
 - No overlapping controls, clipped buttons, or unreadable muted text on subtle surfaces.

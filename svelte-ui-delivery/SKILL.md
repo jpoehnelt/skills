@@ -1,6 +1,6 @@
 ---
 name: svelte-ui-delivery
-description: Implement and verify Svelte 5 (SvelteKit) UI changes with rendered evidence. Use when building pages, forms, components, or shadcn-svelte/Bits UI primitives; fixing responsive, dark-mode, or accessibility issues; writing Storybook stories; or collecting screenshots for a visible change.
+description: Implement and verify Svelte 5 (SvelteKit) UI changes with rendered evidence. Use when building landing pages, app screens, forms, components, or shadcn-svelte/Bits UI primitives; fixing responsive, dark-mode, or accessibility issues; writing Storybook stories; or collecting screenshots for a visible change.
 ---
 
 # Svelte UI delivery
@@ -18,6 +18,7 @@ Repo facts (from AGENTS.md or the app's AGENTS.md): where shared primitives and 
 
 - Inspect the existing surface: a supplied screenshot, a focused story, or the running app. State the user's task, how often they do it, and the friction the change removes.
 - Choose the smallest presentation that serves the task. Prefer contextual help over persistent copy in navigation; keep instructions needed to complete an action visible. Do not add decorative eyebrow badges, status pills, hero glows, background grids, card-in-card wrappers, or unrequested filter bars.
+- For landing pages, read the UI chrome rules in `comms-unslop` before choosing the hero and section layout. Use project content to decide which sections the page needs. Inspect shared hero components for default badges or copy before reusing them.
 - Preserve hierarchy, density, and scan order at phone and laptop widths with realistic content. Contextual help must work by pointer, keyboard, and touch without triggering adjacent actions or moving focus.
 - A persistent notice or banner needs a defined audience, observable rendering condition, supported user action, and either a permanent invariant or a named owner and removal condition.
 
@@ -52,6 +53,7 @@ Component tests assert behavior, contracts, and ARIA semantics, never CSS classe
 - Isolated component change: a focused Storybook story is enough. Run the app when routing, loaders, persistence, or cross-component interaction need verification.
 - Start the dev server with a dynamic port (`--port 0` when supported) and poll its health endpoint until HTTP 200 before navigating in a browser.
 - Verify `scrollWidth <= clientWidth` at **360px** and **1280px** with long realistic data (64-character identifiers, wide tables, editor toolbars), in both light and dark modes, by keyboard only, and with reduced motion on.
+- For landing pages, review the first viewport and full page at both widths against the UI chrome rules in `comms-unslop`. Check the rendered output of shared components for labels the page itself may never declare.
 - Capture and embed screenshots for the PR (never ask the user to open `localhost`); use `ui-audit-loop` for full multi-route visual audits. After a cross-cutting CSS or layout pass, re-capture every referenced screenshot target so no stale images remain.
 
 ## Verify
