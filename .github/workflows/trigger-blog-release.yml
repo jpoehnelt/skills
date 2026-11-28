@@ -1,0 +1,31 @@
+name: Trigger blog release
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - ".github/**"
+  workflow_dispatch:
+
+concurrency:
+  group: trigger-blog-release
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Dispatch jpoehnelt/blog release workflow
+        env:
+          GH_TOKEN: ${{ secrets.BLOG_DEPLOY_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::notice::BLOG_DEPLOY_TOKEN is not set; skipping jpoehnelt/blog release dispatch."
+            exit 0
+          fi
+          gh workflow run release.yml --repo jpoehnelt/blog --ref main
